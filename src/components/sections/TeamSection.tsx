@@ -35,14 +35,14 @@ export function TeamSection() {
           className="mb-16"
         />
 
-        <motion.div
-           className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 lg:gap-10"
-           variants={containerVariants}
-           initial="hidden"
-           whileInView={mounted ? "visible" : "hidden"}
-           viewport={{ once: true, margin: "-80px" }}
-         >
-           {team.map((member, idx) => (
+         <motion.div
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 lg:gap-10"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+          >
+            {mounted && team.map((member, idx) => (
              <TeamCard key={idx} member={member} variants={cardVariants} />
            ))}
          </motion.div>

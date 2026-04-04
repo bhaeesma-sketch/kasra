@@ -206,6 +206,7 @@ export function Hero() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [canvasReady, setCanvasReady] = useState(false);
   const [hasWebGL, setHasWebGL] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     const x = (e.clientX / window.innerWidth - 0.5) * 20;
@@ -227,6 +228,7 @@ export function Hero() {
       } catch {
         setHasWebGL(false);
       }
+      setMounted(true);
       
       // Entry cinematic sequence
       const tl = gsap.timeline({ delay: 0.1 });
@@ -282,7 +284,7 @@ export function Hero() {
     };
   }, [handleMouseMove]);
 
-  const isDark = resolvedTheme === "dark";
+  const isDark = mounted && resolvedTheme === "dark";
 
   return (
     <section

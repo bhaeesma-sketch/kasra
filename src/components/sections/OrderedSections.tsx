@@ -5,13 +5,21 @@ import { useContent } from "@/context/ContentContext";
 import { FadeUp, RevealLine, ParallaxCard } from "@/components/ui/AnimationKit";
 import { motion } from "framer-motion";
 
+import { useEffect, useState } from "react";
+
 export function OrderedSections() {
   const { language } = useLanguage();
   const { categories } = useContent();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   return (
     <div className="w-full transition-colors pt-8 pb-32" style={{ background: 'var(--bg-main)' }}>
-      {categories.map((section, idx) => (
+      {mounted && categories.map((section, idx) => (
         <section key={section.id} id={section.id} className="py-20 md:py-28">
           <div className="container mx-auto px-6 md:px-12">
             {/* Section header */}
