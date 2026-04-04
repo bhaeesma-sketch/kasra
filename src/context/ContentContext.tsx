@@ -85,10 +85,8 @@ export function ContentProvider({ children }: { children: ReactNode }) {
 
   // Mark as hydrated on mount & fetch latest from Supabase
   useEffect(() => {
-    // 1. Instantly load from local cache to prevent empty flashes
     const initStorage = async () => {
       const stored = loadFromStorage();
-      
       if (stored) {
         setTeam(stored.team);
         setCategories(stored.categories);
@@ -114,8 +112,20 @@ export function ContentProvider({ children }: { children: ReactNode }) {
         console.error("Supabase fetch error:", err);
       }
     };
-    
     fetchFromSupabase();
+
+    // Listen for cross-tab changes in local storage
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (parsed.team) setTeam(parsed.team);
+          if (parsed.categories) setCategories(parsed.categories);
+        } catch { }
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   // Auto-save whenever team or categories change (after hydration)
@@ -139,8 +149,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
     };
     syncToSupabase();
     
-    // Use setTimeout to move state update out of the render cycle
-    const timer = setTimeout(() => setLastSaved(new Date()), 0);
+    const timer = setTimeout(() => setLastSaved(new Date()), 100);
     return () => clearTimeout(timer);
   }, [team, categories, hydrated]);
 
