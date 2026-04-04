@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-primary: #f5f5f5;
+  --color-secondary: #aaaaaa;
+  --color-accent: #d4af37; /* subtle gold */
+  
+  --font-serif: var(--font-playfair), "Georgia", serif;
+  --font-sans: var(--font-inter), "Helvetica Neue", sans-serif;
+  --font-arabic: var(--font-vazirmatn), "Arial", sans-serif;
+}
+
+@utility font-fa {
+  font-family: var(--font-arabic);
+}
+
+@utility font-en {
+  font-family: var(--font-sans);
+}
+
+@utility font-en-serif {
+  font-family: var(--font-serif);
+}
+
+html.font-en h1, 
+html.font-en h2, 
+html.font-en h3, 
+html.font-en h4, 
+html.font-en h5, 
+html.font-en h6 {
+  font-family: var(--font-serif);
+}
+
+html.font-fa h1, 
+html.font-fa h2, 
+html.font-fa h3, 
+html.font-fa h4, 
+html.font-fa h5, 
+html.font-fa h6 {
+  font-family: var(--font-arabic);
+}
+
+body {
+  cursor: none;
+}
+
+/* Glassmorphism utilities */
+@utility glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+@utility glass-dark {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Hide scrollbar */
+::-webkit-scrollbar {
+  display: none;
+}
+html {
+  scrollbar-width: none;
+}
