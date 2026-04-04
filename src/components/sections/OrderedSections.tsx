@@ -28,36 +28,30 @@ export function OrderedSections() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {section.items.map((item, i) => {
-                const imgSrc = item.img.startsWith("http") || item.img.startsWith("/") 
-                  ? `${item.img.split("?")[0]}?v=${new Date().getTime()}`
-                  : item.img;
-                  
-                return (
-                  <div key={i} className="group cursor-pointer flex flex-col">
-                    <div 
-                      className={`w-full overflow-hidden bg-neutral-200 dark:bg-neutral-900 mb-6 ${
-                        section.items.length === 1 ? 'lg:col-span-3 aspect-21/9' : 
-                        'aspect-4/3 w-full'
-                      }`}
-                    >
-                      <img 
-                        src={imgSrc} 
-                        alt={item.titleEn} 
-                        className="w-full h-full object-cover filter brightness-[0.95] group-hover:brightness-100 transition-all duration-500 will-change-transform"
-                        loading="lazy"
-                      />
-                    </div>
-                    <h3 className="text-xl md:text-2xl font-serif text-black dark:text-white group-hover:text-accent transition-colors leading-snug">
-                      {language === "en" ? item.titleEn : item.titleFa}
-                    </h3>
-                    <div className="h-px w-12 bg-black/20 dark:bg-white/20 mt-6 mb-4"></div>
-                    <button className="text-left text-xs uppercase tracking-widest text-black/50 dark:text-white/50 group-hover:text-black dark:group-hover:text-white transition-colors">
-                      {language === "en" ? "Explore →" : "← کاوش"}
-                    </button>
+              {section.items.map((item, i) => (
+                <div key={i} className="group cursor-pointer flex flex-col">
+                  <div 
+                    className={`w-full overflow-hidden bg-neutral-200 dark:bg-neutral-900 mb-6 ${
+                      section.items.length === 1 ? 'lg:col-span-3 aspect-21/9' : 
+                      'aspect-4/3 w-full'
+                    }`}
+                  >
+                    <img 
+                      src={item.img} 
+                      alt={item.titleEn} 
+                      className="w-full h-full object-cover filter brightness-[0.95] group-hover:brightness-100 transition-all duration-500 will-change-transform"
+                      loading="lazy"
+                    />
                   </div>
-                );
-              })}
+                  <h3 className="text-xl md:text-2xl font-serif text-black dark:text-white group-hover:text-accent transition-colors leading-snug">
+                    {language === "en" ? item.titleEn : item.titleFa}
+                  </h3>
+                  <div className="h-px w-12 bg-black/20 dark:bg-white/20 mt-6 mb-4"></div>
+                  <button className="text-left text-xs uppercase tracking-widest text-black/50 dark:text-white/50 group-hover:text-black dark:group-hover:text-white transition-colors">
+                    {language === "en" ? "Explore →" : "← کاوش"}
+                  </button>
+                </div>
+              ))}
             </div>
 
           </div>

@@ -15,27 +15,21 @@ export function TeamSection() {
         </h2>
         
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 lg:gap-12">
-          {team.map((member, idx) => {
-            const imgSrc = member.img.startsWith("http") || member.img.startsWith("/") 
-              ? `${member.img.split("?")[0]}?v=${new Date().getTime()}`
-              : member.img;
-
-            return (
-              <div key={idx} className="group cursor-pointer">
-                <div className="w-full aspect-4/5 overflow-hidden bg-neutral-200 dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 rounded-sm mb-4">
-                  <img 
-                    src={imgSrc} 
-                    alt={member.name} 
-                    className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-500 will-change-transform"
-                    loading="lazy"
-                    suppressHydrationWarning
-                  />
-                </div>
-                <h3 className="text-lg font-serif text-black dark:text-white tracking-wider">{member.name}</h3>
-                <p className="text-xs text-black/50 dark:text-white/50 uppercase tracking-widest mt-1">{member.role}</p>
+          {team.map((member, idx) => (
+            <div key={idx} className="group cursor-pointer">
+              <div className="w-full aspect-4/5 overflow-hidden bg-neutral-200 dark:bg-neutral-800 border border-neutral-200 dark:border-white/10 rounded-sm mb-4">
+                <img 
+                  src={member.img} 
+                  alt={member.name} 
+                  className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-500 will-change-transform"
+                  loading="lazy"
+                  suppressHydrationWarning
+                />
               </div>
-            );
-          })}
+              <h3 className="text-lg font-serif text-black dark:text-white tracking-wider">{member.name}</h3>
+              <p className="text-xs text-black/50 dark:text-white/50 uppercase tracking-widest mt-1">{member.role}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
