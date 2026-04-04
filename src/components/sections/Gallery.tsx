@@ -140,47 +140,53 @@ export function Gallery() {
     <section id="portfolio" ref={sectionRef} className="relative w-full py-16 bg-neutral-50 dark:bg-neutral-950 overflow-hidden transition-colors duration-500">
       <div className="container mx-auto px-6 lg:px-12">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 masonry-grid items-start">
-          {displayCategories.map((cat, i) => (
-            <div 
-              key={i} 
-              className={cn(
-                "gallery-card w-full relative group cursor-pointer",
-                cat.size === "large" ? "lg:col-span-2" : "",
-                cat.type === "portrait" ? "aspect-3/4" : cat.type === "landscape" ? "aspect-video" : "aspect-square",
-                i % 2 !== 0 ? "md:mt-12" : ""
-              )}
-              onMouseMove={handleCardHover}
-              onMouseLeave={handleCardLeave}
-              onClick={() => {
-                 const el = document.getElementById(cat.id);
-                 if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
-              data-cursor="hover"
-            >
-              <div className="card-inner-transform w-full h-full relative perspective-1000">
-                <div className="w-full h-full relative overflow-hidden rounded-xl bg-neutral-200 dark:bg-neutral-900 border border-black/5 dark:border-white/10">
-                  <div className="absolute inset-[-15%] w-[130%] h-[130%]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img 
-                      suppressHydrationWarning
-                      src={cat.img} 
-                      alt={cat.titleEn} 
-                      className="card-image-inner w-full h-full object-cover filter saturate-50 dark:saturate-0 brightness-90 dark:brightness-75 transition-all duration-700 group-hover:saturate-100 group-hover:brightness-100 dark:group-hover:brightness-100 scale-100 group-hover:scale-105"
-                    />
-                  </div>
-                  
-                  {/* Overlay background */}
-                  <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
-                  
-                  {/* Glassmorphic Popup overlay */}
-                  <div className="card-overlay absolute bottom-4 inset-x-4 glass dark:glass-dark border border-white/20 p-4 opacity-0 translate-y-4 transition-all duration-300 pointer-events-none rounded-lg text-black dark:text-white flex flex-col justify-end">
-                    <span className="text-accent text-xs tabular-nums tracking-widest font-serif mb-1 block">{`0${i + 1}`}</span>
-                    <h3 className="text-lg md:text-xl font-serif text-white leading-tight">{language === "en" ? cat.titleEn : cat.titleFa}</h3>
+          {displayCategories.map((cat, i) => {
+            const imgSrc = cat.img.startsWith("http") || cat.img.startsWith("/") 
+              ? `${cat.img.split("?")[0]}?v=${new Date().getTime()}`
+              : cat.img;
+
+            return (
+              <div 
+                key={i} 
+                className={cn(
+                  "gallery-card w-full relative group cursor-pointer",
+                  cat.size === "large" ? "lg:col-span-2" : "",
+                  cat.type === "portrait" ? "aspect-3/4" : cat.type === "landscape" ? "aspect-video" : "aspect-square",
+                  i % 2 !== 0 ? "md:mt-12" : ""
+                )}
+                onMouseMove={handleCardHover}
+                onMouseLeave={handleCardLeave}
+                onClick={() => {
+                   const el = document.getElementById(cat.id);
+                   if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                data-cursor="hover"
+              >
+                <div className="card-inner-transform w-full h-full relative perspective-1000">
+                  <div className="w-full h-full relative overflow-hidden rounded-xl bg-neutral-200 dark:bg-neutral-900 border border-black/5 dark:border-white/10">
+                    <div className="absolute inset-[-15%] w-[130%] h-[130%]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img 
+                        suppressHydrationWarning
+                        src={imgSrc} 
+                        alt={cat.titleEn} 
+                        className="card-image-inner w-full h-full object-cover filter saturate-50 dark:saturate-0 brightness-90 dark:brightness-75 transition-all duration-700 group-hover:saturate-100 group-hover:brightness-100 dark:group-hover:brightness-100 scale-100 group-hover:scale-105"
+                      />
+                    </div>
+                    
+                    {/* Overlay background */}
+                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                    
+                    {/* Glassmorphic Popup overlay */}
+                    <div className="card-overlay absolute bottom-4 inset-x-4 glass dark:glass-dark border border-white/20 p-4 opacity-0 translate-y-4 transition-all duration-300 pointer-events-none rounded-lg text-black dark:text-white flex flex-col justify-end">
+                      <span className="text-accent text-xs tabular-nums tracking-widest font-serif mb-1 block">{`0${i + 1}`}</span>
+                      <h3 className="text-lg md:text-xl font-serif text-white leading-tight">{language === "en" ? cat.titleEn : cat.titleFa}</h3>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
