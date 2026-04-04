@@ -67,11 +67,25 @@ export function CustomCursor() {
   return (
     <div
       ref={cursorRef}
-      className="fixed top-0 left-0 w-4 h-4 bg-white rounded-full pointer-events-none z-[9999]"
+      className="fixed top-0 left-0 pointer-events-none z-[9999]"
       style={{
         transform: "translate(-50%, -50%)",
-        mixBlendMode: "difference",
+        width: "20px",
+        height: "20px",
+        mixBlendMode: "normal"
       }}
-    />
+    >
+      <div 
+        className="w-full h-full bg-accent dark:bg-accent rounded-full absolute top-0 left-0"
+        style={{
+          boxShadow: "0 0 20px rgba(255, 107, 0, 0.6)",
+          opacity: 0.9
+        }}
+      />
+      <div 
+        className="w-full h-full bg-transparent border-[1.5px] border-accent dark:border-accent rounded-full absolute top-0 left-0 animate-ping opacity-60"
+        style={{ animationDuration: "2s" }}
+      />
+    </div>
   );
 }
