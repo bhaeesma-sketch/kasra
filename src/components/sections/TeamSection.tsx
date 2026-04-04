@@ -2,7 +2,7 @@
 
 import { useLanguage } from "@/context/LanguageContext";
 import { useContent } from "@/context/ContentContext";
-import { FadeUp, SectionHeading } from "@/components/ui/AnimationKit";
+import { SectionHeading } from "@/components/ui/AnimationKit";
 import { motion } from "framer-motion";
 
 export function TeamSection() {
@@ -20,7 +20,7 @@ export function TeamSection() {
   };
 
   return (
-    <section id="design-team" className="py-24 bg-neutral-50 dark:bg-[#080604] transition-colors">
+    <section id="design-team" className="py-24 transition-colors" style={{ background: 'var(--bg-main)' }}>
       <div className="container mx-auto px-6 md:px-12">
         <SectionHeading
           number="01"

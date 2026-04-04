@@ -1,11 +1,27 @@
 "use client";
 
 import { useLanguage } from "@/context/LanguageContext";
-import { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import gsap from "gsap";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useTheme } from "next-themes";
+
+class ErrorBoundary extends React.Component<{ children: React.ReactNode, fallback: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: React.ReactNode, fallback: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
 
 // ─── Lightweight Architectural 3D Element ────────────────────────────────────
 // Uses MeshStandardMaterial (GPU-cheap). No transmission, no offscreen pass.
@@ -87,27 +103,42 @@ function ArchGrid() {
           if (!seen.has(key)) { seen.add(key); pts.push([x, y, z]); }
         }
         return pts.map(([x, y, z], idx) => (
-          <mesh key={idx} position={[x, y, z]}>
-            <sphereGeometry args={[0.045, 6, 6]} />
-            <meshBasicMaterial color="#f0c070" />
-          </mesh>
+          <group key={idx} position={[x, y, z]}>
+            <mesh>
+              <sphereGeometry args={[0.045, 6, 6]} />
+              <meshBasicMaterial color="#f0c070" />
+            </mesh>
+            {/* Coordinate Label - Very small, techy */}
+            {idx % 4 === 0 && (
+              <mesh position={[0.2, 0.1, 0]} scale={[0.1, 0.1, 0.1]}>
+                <sphereGeometry args={[0.02, 4, 4]} />
+                <meshBasicMaterial color="#c8a882" opacity={0.4} transparent />
+              </mesh>
+            )}
+          </group>
         ));
       })()}
+
+      {/* Axis Crosshairs */}
+      <mesh rotation={[0, 0, 0]}>
+        <ringGeometry args={[4.5, 4.51, 64]} />
+        <meshBasicMaterial color="#c8a882" transparent opacity={0.05} />
+      </mesh>
     </group>
   );
 }
 
 // ─── Floating particle field ──────────────────────────────────────────────────
+const PARTICLE_COUNT = 120;
+const PARTICLE_POSITIONS = new Float32Array(PARTICLE_COUNT * 3);
+for (let i = 0; i < PARTICLE_COUNT; i++) {
+  PARTICLE_POSITIONS[i * 3] = (Math.random() - 0.5) * 16;
+  PARTICLE_POSITIONS[i * 3 + 1] = (Math.random() - 0.5) * 12;
+  PARTICLE_POSITIONS[i * 3 + 2] = (Math.random() - 0.5) * 8 - 2;
+}
+
 function ParticleField() {
   const pointsRef = useRef<THREE.Points>(null);
-  const count = 120;
-
-  const positions = new Float32Array(count * 3);
-  for (let i = 0; i < count; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 16;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 12;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 8 - 2;
-  }
 
   useFrame((state) => {
     if (!pointsRef.current) return;
@@ -118,10 +149,49 @@ function ParticleField() {
   return (
     <points ref={pointsRef}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+        <bufferAttribute attach="attributes-position" args={[PARTICLE_POSITIONS, 3]} />
       </bufferGeometry>
       <pointsMaterial color="#c8a882" size={0.04} transparent opacity={0.5} sizeAttenuation />
     </points>
+  );
+}
+
+// ─── Premium Architectural Fallback (No WebGL) ──────────────────────────────
+function ArchitecturalFallback({ isDark }: { isDark: boolean }) {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+      {/* Dynamic Grid */}
+      <div 
+        className="absolute inset-0 opacity-[0.05]"
+        style={{
+          backgroundImage: `linear-gradient(${isDark ? '#c8a882' : '#8a6030'} 1px, transparent 1px), linear-gradient(90deg, ${isDark ? '#c8a882' : '#8a6030'} 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
+        }}
+      />
+      
+      {/* Animated Schematic Elements */}
+      <div className="relative w-[30rem] h-[30rem] opacity-30">
+        <svg viewBox="0 0 400 400" className="w-full h-full">
+          {/* Rotating Dodecahedron Outline (Approximated with Hexagons) */}
+          <g className="origin-center animate-[spin_60s_linear_infinite]">
+            <path d="M200 40 L340 120 L340 280 L200 360 L60 280 L60 120 Z" fill="none" stroke={isDark ? '#c8a882' : '#8a6030'} strokeWidth="0.5" strokeDasharray="10,5" />
+            <path d="M200 100 L286 150 L286 250 L200 300 L114 250 L114 150 Z" fill="none" stroke={isDark ? '#c8a882' : '#8a6030'} strokeWidth="1" />
+          </g>
+          
+          {/* Axis Lines */}
+          <line x1="0" y1="200" x2="400" y2="200" stroke={isDark ? '#c8a882' : '#8a6030'} strokeWidth="0.2" opacity="0.5" />
+          <line x1="200" y1="0" x2="200" y2="400" stroke={isDark ? '#c8a882' : '#8a6030'} strokeWidth="0.2" opacity="0.5" />
+          
+          {/* Pulsing Circles */}
+          <circle cx="200" cy="200" r="160" fill="none" stroke={isDark ? '#c8a882' : '#8a6030'} strokeWidth="0.5" className="animate-pulse" />
+          <circle cx="200" cy="200" r="120" fill="none" stroke={isDark ? '#c8a882' : '#8a6030'} strokeWidth="0.8" strokeDasharray="2,10" className="animate-[spin_40s_linear_infinite_reverse]" />
+        </svg>
+        
+        {/* Floating schematic labels */}
+        <div className="absolute top-0 left-0 text-[8px] uppercase tracking-tighter opacity-40">System::Structural_A1</div>
+        <div className="absolute bottom-0 right-0 text-[8px] uppercase tracking-tighter opacity-40">Viewport::Ortho_Z</div>
+      </div>
+    </div>
   );
 }
 
@@ -135,6 +205,7 @@ export function Hero() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const [canvasReady, setCanvasReady] = useState(false);
+  const [hasWebGL, setHasWebGL] = useState(true);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     const x = (e.clientX / window.innerWidth - 0.5) * 20;
@@ -150,6 +221,12 @@ export function Hero() {
   useEffect(() => {
     const raf = requestAnimationFrame(() => {
       setCanvasReady(true);
+      try {
+        const canvas = document.createElement("canvas");
+        setHasWebGL(!!(window.WebGLRenderingContext && (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))));
+      } catch {
+        setHasWebGL(false);
+      }
       
       // Entry cinematic sequence
       const tl = gsap.timeline({ delay: 0.1 });
@@ -170,9 +247,9 @@ export function Hero() {
         ).join("");
         tl.fromTo(
           titleRef.current.querySelectorAll("span"),
-          { y: 120, opacity: 0, rotateX: -90 },
-          { y: 0, opacity: 1, rotateX: 0, duration: 1, ease: "expo.out", stagger: 0.035 },
-          "-=0.6"
+          { y: 140, opacity: 0, rotateX: -100, filter: "blur(12px)" },
+          { y: 0, opacity: 1, rotateX: 0, filter: "blur(0px)", duration: 1.4, ease: "expo.out", stagger: 0.04 },
+          "-=0.7"
         );
       }
 
@@ -211,13 +288,13 @@ export function Hero() {
     <section
       id="home"
       className="relative w-full h-screen flex items-center justify-center overflow-hidden"
-      style={{ background: isDark ? "#080604" : "#f5f0eb" }}
+      style={{ background: isDark ? "var(--bg-dark)" : "var(--bg-main)" }}
     >
       {/* Intro overlay wipe */}
       <div
         ref={overlayRef}
         className="absolute inset-0 z-30"
-        style={{ background: isDark ? "#080604" : "#f5f0eb", transformOrigin: "top" }}
+        style={{ background: isDark ? "var(--bg-dark)" : "var(--bg-main)", transformOrigin: "top" }}
       />
 
       {/* Subtle grain texture */}
@@ -231,19 +308,23 @@ export function Hero() {
 
       {/* 3D Canvas — architectural wireframe, GPU-efficient */}
       <div className="absolute inset-0 z-0">
-        {canvasReady && (
-          <Canvas
-            camera={{ position: [0, 0, 8], fov: 50 }}
-            gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-            dpr={Math.min(window.devicePixelRatio, 1.5)} // cap DPR for performance
-          >
-            <ambientLight intensity={isDark ? 0.4 : 0.9} color={isDark ? "#c8a882" : "#fff8f0"} />
-            <directionalLight position={[5, 8, 5]} intensity={isDark ? 1.2 : 1.8} color="#ffeecc" />
-            <pointLight position={[-5, -5, 3]} intensity={isDark ? 0.6 : 0.3} color="#8060a0" />
-            <ArchGrid />
-            <ParticleField />
-          </Canvas>
-        )}
+        {canvasReady && (hasWebGL ? (
+          <ErrorBoundary fallback={<ArchitecturalFallback isDark={isDark} />}>
+            <Canvas
+              camera={{ position: [0, 0, 8], fov: 50 }}
+              gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+              dpr={Math.min(window.devicePixelRatio, 1.5)} // cap DPR for performance
+            >
+              <ambientLight intensity={isDark ? 0.4 : 0.9} color={isDark ? "#c8a882" : "#fff8f0"} />
+              <directionalLight position={[5, 8, 5]} intensity={isDark ? 1.2 : 1.8} color="#ffeecc" />
+              <pointLight position={[-5, -5, 3]} intensity={isDark ? 0.6 : 0.3} color="#8060a0" />
+              <ArchGrid />
+              <ParticleField />
+            </Canvas>
+          </ErrorBoundary>
+        ) : (
+          <ArchitecturalFallback isDark={isDark} />
+        ))}
       </div>
 
       {/* ─── Horizontal rule decorations ────────────────────────────── */}

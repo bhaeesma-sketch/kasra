@@ -7,7 +7,7 @@ import { TextTicker } from "@/components/ui/AnimationKit";
 
 export default function Home() {
   return (
-    <main className="w-full min-h-screen bg-neutral-50 dark:bg-[#080604] text-black dark:text-white relative">
+    <main className="w-full min-h-screen transition-colors duration-700 overflow-hidden" style={{ background: 'var(--bg-main)' }}>
       <Navbar />
       <Hero />
       <TextTicker text="Architecture · Design · Space · Form · Light · Structure" speed={28} />

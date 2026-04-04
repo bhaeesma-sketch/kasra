@@ -137,7 +137,7 @@ export function Gallery() {
   });
 
   return (
-    <section id="portfolio" ref={sectionRef} className="relative w-full py-16 bg-neutral-50 dark:bg-neutral-950 overflow-hidden transition-colors duration-500">
+    <section id="portfolio" ref={sectionRef} className="relative w-full py-16 overflow-hidden transition-colors duration-500" style={{ background: 'var(--bg-main)' }}>
       <div className="container mx-auto px-6 lg:px-12">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 masonry-grid items-start">
           {displayCategories.map((cat, i) => (

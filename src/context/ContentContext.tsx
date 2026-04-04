@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { siteData } from "@/data/siteContent";
+import { supabase } from "@/utils/supabase";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface TeamMember {
@@ -55,8 +56,6 @@ function loadFromStorage(): { team: TeamMember[]; categories: Category[] } | nul
     return null;
   }
 }
-
-import { supabase } from "@/utils/supabase";
 
 function saveToStorage(data: { team: TeamMember[]; categories: Category[] }) {
   if (typeof window === "undefined") return;

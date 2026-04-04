@@ -39,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${playfair.variable} ${inter.variable} ${vazirmatn.variable}`}>
       <body suppressHydrationWarning className="bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-50 antialiased overflow-x-hidden selection:bg-neutral-200 dark:selection:bg-neutral-800 selection:text-black dark:selection:text-white transition-colors duration-500">
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={true}>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={true}>
           <ContentProvider>
             <LanguageProvider>
               <SmoothScroll>

@@ -1,12 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn('Supabase credentials missing. Site content will only persist in local storage.');
+}
+
+export const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseAnonKey || 'placeholder', {
   global: {
     fetch: (url, options) => {
-      // Force Next.js / Browsers to always fetch fresh data
       return fetch(url, { ...options, cache: 'no-store' });
     }
   }

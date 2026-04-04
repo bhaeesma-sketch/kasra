@@ -10,20 +10,22 @@ export function OrderedSections() {
   const { categories } = useContent();
 
   return (
-    <div className="w-full bg-neutral-50 dark:bg-[#080604] transition-colors pt-8 pb-32">
+    <div className="w-full transition-colors pt-8 pb-32" style={{ background: 'var(--bg-main)' }}>
       {categories.map((section, idx) => (
         <section key={section.id} id={section.id} className="py-20 md:py-28">
           <div className="container mx-auto px-6 md:px-12">
             {/* Section header */}
             <FadeUp>
               <div className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-6">
-                <div>
-                  <span className="text-accent text-xs tabular-nums tracking-[0.4em] font-mono block mb-3">
-                    {String(idx + 1).padStart(2, "0")}
-                  </span>
-                  <h2 className="text-3xl md:text-5xl font-serif text-black dark:text-white uppercase tracking-widest leading-tight">
-                    {language === "en" ? section.titleEn : section.titleFa}
-                  </h2>
+                <div className="flex items-center gap-3">
+                  <div>
+                    <span className="text-accent text-[8px] tabular-nums tracking-[0.5em] font-mono block mb-2 opacity-50">
+                      SEC_0{idx + 1} {"// 45.7° N"}
+                    </span>
+                    <h2 className="text-3xl md:text-5xl font-serif text-black dark:text-white uppercase tracking-widest leading-tight">
+                      {language === "en" ? section.titleEn : section.titleFa}
+                    </h2>
+                  </div>
                 </div>
                 <motion.button
                   className="text-[10px] tracking-[0.3em] uppercase border-b border-black/20 dark:border-white/20 pb-1 text-black/60 dark:text-white/60 self-start md:self-end"
@@ -67,16 +69,23 @@ export function OrderedSections() {
                   />
 
                   {/* Text */}
-                  <motion.h3
-                    className="text-xl md:text-2xl font-serif text-black dark:text-white leading-snug"
-                    whileHover={{ x: 4 }}
-                    transition={{ duration: 0.25 }}
+                  <motion.div
+                    className="relative"
+                    whileHover={{ x: 6 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    {language === "en" ? item.titleEn : item.titleFa}
-                  </motion.h3>
-                  <div className="h-px w-0 bg-accent mt-5 mb-4 group-hover:w-12 transition-all duration-500" />
-                  <span className="text-[10px] uppercase tracking-[0.35em] text-black/40 dark:text-white/40 group-hover:text-accent transition-colors duration-300">
-                    {language === "en" ? "Explore →" : "← کاوش"}
+                    <h3 className="text-xl md:text-2xl font-serif text-black dark:text-white leading-snug">
+                      {language === "en" ? item.titleEn : item.titleFa}
+                    </h3>
+                    <div className="flex items-center gap-4 mt-4">
+                      <div className="h-px w-8 bg-accent/30 group-hover:w-16 group-hover:bg-accent transition-all duration-500" />
+                      <span className="text-[8px] font-mono tracking-widest opacity-30 group-hover:opacity-100 transition-opacity">
+                        REF_ID: K{idx}{i}
+                      </span>
+                    </div>
+                  </motion.div>
+                  <span className="text-[10px] uppercase tracking-[0.35em] text-black/40 dark:text-white/40 mt-4 group-hover:text-accent transition-colors duration-300">
+                    {language === "en" ? "Explore Archive →" : "← مشاهده پیوست"}
                   </span>
                 </motion.div>
               ))}

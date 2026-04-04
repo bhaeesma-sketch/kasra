@@ -49,13 +49,20 @@ export function Navbar() {
         mobileMenuOpen ? "bg-white dark:bg-neutral-950 h-screen py-4" : ""
       )}
     >
-      <div className="container mx-auto px-4 md:px-12 h-full flex flex-col">
+      <div className="container mx-auto px-4 md:px-12 h-full flex flex-col relative">
+        {/* Scroll Progress Bar */}
+        <div className="absolute bottom-0 left-4 md:left-12 right-4 md:right-12 h-px bg-black/5 dark:bg-white/5 overflow-hidden rounded-full">
+          <div 
+            className="h-full bg-accent transition-all duration-300 ease-out"
+            style={{ width: `${mounted ? Math.min((typeof window !== 'undefined' ? window.scrollY : 0) / (typeof document !== 'undefined' ? document.documentElement.scrollHeight - window.innerHeight : 1) * 100, 100) : 0}%` }}
+          />
+        </div>
         <div className="glass shadow-sm dark:shadow-none px-4 md:px-6 py-4 rounded-full flex justify-between items-center bg-white/40 dark:bg-black/40 border border-neutral-200 dark:border-white/10 backdrop-blur-md">
-          <div className="nav-item text-xl md:text-2xl font-bold tracking-wider uppercase text-red-600 font-serif">
-            KASRA<span className="text-black dark:text-white">PADYAB</span>
+          <div className="nav-item text-lg md:text-xl font-bold tracking-[0.2em] uppercase font-serif">
+            <span className="text-accent">KASRA</span><span className="text-black dark:text-white ml-2">PADYAB</span>
           </div>
           
-          <div className="hidden lg:flex gap-4 xl:gap-6 items-center text-xs tracking-wider uppercase font-semibold">
+          <div className="hidden lg:flex gap-5 xl:gap-8 items-center text-[9px] tracking-[0.4em] uppercase font-medium text-black/60 dark:text-white/60">
             {navLinks.map((link) => (
               <a key={link.key} href={link.href} className="nav-item hover:opacity-70 transition-opacity whitespace-nowrap">
                 {link.key}
