@@ -1,153 +1,335 @@
 "use client";
 
 import { useLanguage } from "@/context/LanguageContext";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import gsap from "gsap";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useTheme } from "next-themes";
-import { MeshTransmissionMaterial, Float, Environment } from "@react-three/drei";
 
-function WarmGlassSculpture({ theme }: { theme: string | undefined }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const lightRef = useRef<THREE.PointLight>(null);
+// ─── Lightweight Architectural 3D Element ────────────────────────────────────
+// Uses MeshStandardMaterial (GPU-cheap). No transmission, no offscreen pass.
+function ArchGrid() {
+  const groupRef = useRef<THREE.Group>(null);
+  const mouse = useRef({ x: 0, y: 0 });
+
+  // Track pointer inside canvas
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      mouse.current.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    };
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
 
   useFrame((state, delta) => {
-    if (meshRef.current) {
-      // Base rotation
-      meshRef.current.rotation.x += delta * 0.1;
-      meshRef.current.rotation.y += delta * 0.15;
-      
-      // Magnetic mouse reaction
-      const mouseX = state.pointer.x;
-      const mouseY = state.pointer.y;
-      
-      gsap.to(meshRef.current.position, {
-        x: mouseX * 0.8,
-        y: mouseY * 0.8,
-        duration: 3,
-        ease: "power2.out",
-      });
-      
-      gsap.to(meshRef.current.rotation, {
-        z: mouseX * 0.4,
-        duration: 2,
-        ease: "power2.out",
-      });
-    }
-
-    if (lightRef.current) {
-      // Pulsing calmly
-      lightRef.current.intensity = 2 + Math.sin(state.clock.elapsedTime * 1.5) * 1.5;
-    }
+    if (!groupRef.current) return;
+    // Slow base auto-rotation
+    groupRef.current.rotation.y += delta * 0.12;
+    groupRef.current.rotation.x += delta * 0.04;
+    // Smooth magnetic mouse tilt
+    groupRef.current.rotation.x += (mouse.current.y * 0.3 - groupRef.current.rotation.x) * 0.03;
+    groupRef.current.rotation.z += (-mouse.current.x * 0.15 - groupRef.current.rotation.z) * 0.03;
   });
 
-  const isLight = theme === 'light';
+  // Build an architectural wireframe: a dodecahedron (12-faced, very architectural)
+  // plus a few orbiting thin rings — looks like a structural diagram / blueprint
+  const dodecGeo = new THREE.DodecahedronGeometry(2.2, 0);
+  const edgesGeo = new THREE.EdgesGeometry(dodecGeo);
+
+  const ringGeo1 = new THREE.TorusGeometry(3.2, 0.012, 4, 64);
+  const ringGeo2 = new THREE.TorusGeometry(2.6, 0.008, 4, 64);
+  const ringGeo3 = new THREE.TorusGeometry(3.8, 0.006, 4, 64);
 
   return (
-    <Float speed={2} rotationIntensity={0.5} floatIntensity={1.5}>
-      <mesh ref={meshRef}>
-        {/* Smooth, high-poly shape for polished stone/glass look */}
-        <icosahedronGeometry args={[2.8, 12]} />
-        <MeshTransmissionMaterial 
-          backside
-          backsideThickness={2}
-          thickness={3}
-          roughness={0.15}
-          transmission={1}
-          ior={1.4}
-          chromaticAberration={0.05}
-          anisotropy={0.3}
-          resolution={1024}
-          color={isLight ? "#e0b28e" : "#ffccaa"} // Warm stone/glass tint
-          attenuationDistance={3}
-          attenuationColor={isLight ? "#ffffff" : "#000000"}
+    <group ref={groupRef}>
+      {/* Core wireframe dodecahedron */}
+      <lineSegments geometry={edgesGeo}>
+        <lineBasicMaterial color="#c8a882" transparent opacity={0.6} />
+      </lineSegments>
+
+      {/* Glowing solid inner core — very cheap MeshStandardMaterial */}
+      <mesh>
+        <dodecahedronGeometry args={[2.15, 0]} />
+        <meshStandardMaterial
+          color="#1a1008"
+          emissive="#3d1f06"
+          emissiveIntensity={0.8}
+          roughness={0.7}
+          metalness={0.3}
+          transparent
+          opacity={0.85}
         />
       </mesh>
-      {/* Emanating inner light */}
-      <pointLight ref={lightRef} position={[0, 0, 0]} color={isLight ? "#ffddcc" : "#ffb888"} distance={15} decay={2} />
-    </Float>
+
+      {/* Orbiting architectural rings */}
+      <mesh geometry={ringGeo1} rotation={[Math.PI / 2, 0, 0]}>
+        <meshBasicMaterial color="#a0784a" transparent opacity={0.35} />
+      </mesh>
+      <mesh geometry={ringGeo2} rotation={[Math.PI / 6, Math.PI / 4, 0]}>
+        <meshBasicMaterial color="#c8a882" transparent opacity={0.25} />
+      </mesh>
+      <mesh geometry={ringGeo3} rotation={[Math.PI / 3, Math.PI / 8, 0]}>
+        <meshBasicMaterial color="#8a6030" transparent opacity={0.18} />
+      </mesh>
+
+      {/* Particle dots at vertices */}
+      {dodecGeo.getAttribute("position") && (() => {
+        const positions = dodecGeo.getAttribute("position") as THREE.BufferAttribute;
+        const pts: [number, number, number][] = [];
+        const seen = new Set<string>();
+        for (let i = 0; i < positions.count; i++) {
+          const x = parseFloat(positions.getX(i).toFixed(2));
+          const y = parseFloat(positions.getY(i).toFixed(2));
+          const z = parseFloat(positions.getZ(i).toFixed(2));
+          const key = `${x},${y},${z}`;
+          if (!seen.has(key)) { seen.add(key); pts.push([x, y, z]); }
+        }
+        return pts.map(([x, y, z], idx) => (
+          <mesh key={idx} position={[x, y, z]}>
+            <sphereGeometry args={[0.045, 6, 6]} />
+            <meshBasicMaterial color="#f0c070" />
+          </mesh>
+        ));
+      })()}
+    </group>
   );
 }
 
+// ─── Floating particle field ──────────────────────────────────────────────────
+function ParticleField() {
+  const pointsRef = useRef<THREE.Points>(null);
+  const count = 120;
+
+  const positions = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 16;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 12;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 8 - 2;
+  }
+
+  useFrame((state) => {
+    if (!pointsRef.current) return;
+    pointsRef.current.rotation.y = state.clock.elapsedTime * 0.015;
+    pointsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.008) * 0.1;
+  });
+
+  return (
+    <points ref={pointsRef}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+      </bufferGeometry>
+      <pointsMaterial color="#c8a882" size={0.04} transparent opacity={0.5} sizeAttenuation />
+    </points>
+  );
+}
+
+// ─── Hero Component ───────────────────────────────────────────────────────────
 export function Hero() {
   const { t } = useLanguage();
   const { resolvedTheme } = useTheme();
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const taglineRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const [canvasReady, setCanvasReady] = useState(false);
 
-  useEffect(() => {
-    // Defer 3D canvas and GSAP until after hydration
-    const raf = requestAnimationFrame(() => {
-      setCanvasReady(true);
-      const tl = gsap.timeline();
-      tl.fromTo(
-        titleRef.current,
-        { y: 150, opacity: 0, scale: 0.9, filter: "blur(10px)" },
-        { y: 0, opacity: 1, scale: 1, filter: "blur(0px)", duration: 2, ease: "expo.out", delay: 0.2 }
-      ).fromTo(
-        subtitleRef.current,
-        { y: 50, opacity: 0, filter: "blur(5px)" },
-        { y: 0, opacity: 1, filter: "blur(0px)", duration: 1.5, ease: "power3.out" },
-        "-=1.5"
-      );
-    });
-    return () => cancelAnimationFrame(raf);
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 20;
+    const y = (e.clientY / window.innerHeight - 0.5) * 10;
+    if (titleRef.current) {
+      gsap.to(titleRef.current, { x: x * 0.3, y: y * 0.2, duration: 1.5, ease: "power2.out" });
+    }
+    if (subtitleRef.current) {
+      gsap.to(subtitleRef.current, { x: x * 0.1, y: y * 0.08, duration: 2, ease: "power2.out" });
+    }
   }, []);
 
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => {
+      setCanvasReady(true);
+      
+      // Entry cinematic sequence
+      const tl = gsap.timeline({ delay: 0.1 });
+      
+      // Overlay wipe
+      tl.to(overlayRef.current, {
+        scaleY: 0,
+        transformOrigin: "top",
+        duration: 1,
+        ease: "expo.inOut",
+      });
+
+      // Title chars stagger
+      if (titleRef.current) {
+        const text = titleRef.current.textContent || "";
+        titleRef.current.innerHTML = text.split("").map((c) =>
+          c === " " ? " " : `<span class="inline-block will-change-transform">${c}</span>`
+        ).join("");
+        tl.fromTo(
+          titleRef.current.querySelectorAll("span"),
+          { y: 120, opacity: 0, rotateX: -90 },
+          { y: 0, opacity: 1, rotateX: 0, duration: 1, ease: "expo.out", stagger: 0.035 },
+          "-=0.6"
+        );
+      }
+
+      tl.fromTo(
+        subtitleRef.current,
+        { y: 30, opacity: 0, filter: "blur(8px)" },
+        { y: 0, opacity: 1, filter: "blur(0px)", duration: 1, ease: "power3.out" },
+        "-=0.4"
+      );
+
+      tl.fromTo(
+        taglineRef.current,
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" },
+        "-=0.5"
+      );
+
+      tl.fromTo(
+        scrollRef.current,
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
+        "-=0.3"
+      );
+    });
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [handleMouseMove]);
+
+  const isDark = resolvedTheme === "dark";
+
   return (
-    <section id="home" className="relative w-full h-screen flex items-center justify-center overflow-hidden bg-neutral-100 dark:bg-[#0a0a0a]">
-      {/* 3D Background Sculpture */}
-      <div className="absolute inset-0 z-0 select-none">
+    <section
+      id="home"
+      className="relative w-full h-screen flex items-center justify-center overflow-hidden"
+      style={{ background: isDark ? "#080604" : "#f5f0eb" }}
+    >
+      {/* Intro overlay wipe */}
+      <div
+        ref={overlayRef}
+        className="absolute inset-0 z-30"
+        style={{ background: isDark ? "#080604" : "#f5f0eb", transformOrigin: "top" }}
+      />
+
+      {/* Subtle grain texture */}
+      <div
+        className="absolute inset-0 z-[1] pointer-events-none opacity-[0.03]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+          backgroundSize: "128px"
+        }}
+      />
+
+      {/* 3D Canvas — architectural wireframe, GPU-efficient */}
+      <div className="absolute inset-0 z-0">
         {canvasReady && (
-          <Canvas camera={{ position: [0, 0, 8], fov: 45 }}>
-            <ambientLight intensity={resolvedTheme === 'light' ? 0.8 : 0.3} />
-            <spotLight position={[5, 5, 5]} angle={0.3} penumbra={1} intensity={2} color="#ffffff" />
-            <Environment preset="city" />
-            <WarmGlassSculpture theme={resolvedTheme} />
+          <Canvas
+            camera={{ position: [0, 0, 8], fov: 50 }}
+            gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+            dpr={Math.min(window.devicePixelRatio, 1.5)} // cap DPR for performance
+          >
+            <ambientLight intensity={isDark ? 0.4 : 0.9} color={isDark ? "#c8a882" : "#fff8f0"} />
+            <directionalLight position={[5, 8, 5]} intensity={isDark ? 1.2 : 1.8} color="#ffeecc" />
+            <pointLight position={[-5, -5, 3]} intensity={isDark ? 0.6 : 0.3} color="#8060a0" />
+            <ArchGrid />
+            <ParticleField />
           </Canvas>
         )}
       </div>
 
-      {/* Typography layer overlapping sculpture */}
-      <div className="relative z-10 text-center flex flex-col items-center pointer-events-none">
-        <div className="overflow-visible pb-4 px-4">
-          <h1 
-            ref={titleRef} 
-            className="text-6xl md:text-8xl lg:text-9xl font-serif tracking-tighter uppercase text-black dark:text-white drop-shadow-2xl mix-blend-overlay dark:mix-blend-normal"
-            style={{ textShadow: resolvedTheme === 'dark' ? '0 10px 40px rgba(0,0,0,0.8)' : '0 10px 40px rgba(255,255,255,0.8)' }}
+      {/* ─── Horizontal rule decorations ────────────────────────────── */}
+      <div className="absolute top-[22%] left-0 right-0 z-10 flex items-center gap-6 px-12 pointer-events-none opacity-30">
+        <div className="flex-1 h-px" style={{ background: isDark ? "rgba(200,168,130,0.4)" : "rgba(100,70,30,0.3)" }} />
+        <span className="text-[9px] tracking-[0.5em] uppercase font-light" style={{ color: isDark ? "#c8a882" : "#8a6030" }}>
+          Architecture & Design
+        </span>
+        <div className="flex-1 h-px" style={{ background: isDark ? "rgba(200,168,130,0.4)" : "rgba(100,70,30,0.3)" }} />
+      </div>
+
+      {/* ─── Main typography ────────────────────────────────────────── */}
+      <div className="relative z-10 text-center flex flex-col items-center select-none" style={{ perspective: "1200px" }}>
+        <div className="overflow-hidden pb-2">
+          <h1
+            ref={titleRef}
+            className="font-serif leading-none tracking-[-0.03em] uppercase"
+            style={{
+              fontSize: "clamp(3.5rem, 10vw, 9rem)",
+              color: isDark ? "#f5ede0" : "#1a0f05",
+              textShadow: isDark
+                ? "0 0 80px rgba(200,130,50,0.15)"
+                : "0 4px 40px rgba(100,60,10,0.12)",
+            }}
           >
             {t("hero_title")}
           </h1>
         </div>
-        <div className="overflow-visible">
-          <p 
-            ref={subtitleRef} 
-            className="text-sm md:text-xl font-light tracking-[0.4em] uppercase text-black/70 dark:text-white/70 mt-4 backdrop-blur-sm px-6 py-2 rounded-full border border-black/5 dark:border-white/10"
+
+        <p
+          ref={subtitleRef}
+          className="font-light uppercase tracking-[0.5em] mt-4"
+          style={{
+            fontSize: "clamp(0.65rem, 1.5vw, 0.9rem)",
+            color: isDark ? "rgba(200,168,130,0.7)" : "rgba(100,70,30,0.65)",
+            letterSpacing: "0.5em",
+          }}
+        >
+          {t("hero_subtitle")}
+        </p>
+
+        <div ref={taglineRef} className="mt-10 flex items-center gap-5 opacity-0">
+          <div className="w-8 h-px" style={{ background: isDark ? "rgba(200,168,130,0.5)" : "rgba(120,80,30,0.4)" }} />
+          <span
+            className="text-[10px] tracking-[0.35em] uppercase font-light"
+            style={{ color: isDark ? "rgba(200,168,130,0.6)" : "rgba(100,70,30,0.55)" }}
           >
-            {t("hero_subtitle")}
-          </p>
+            Architectural Psychology
+          </span>
+          <div className="w-8 h-px" style={{ background: isDark ? "rgba(200,168,130,0.5)" : "rgba(120,80,30,0.4)" }} />
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 cursor-pointer text-black/60 dark:text-white/60 pointer-events-auto hover:text-black dark:hover:text-white transition-colors" data-cursor="hover" onClick={() => document.getElementById('design-team')?.scrollIntoView({behavior: 'smooth'})}>
-        <span className="text-[10px] uppercase tracking-widest font-serif">
+      {/* ─── Scroll indicator ───────────────────────────────────────── */}
+      <div
+        ref={scrollRef}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 cursor-pointer opacity-0"
+        data-cursor="hover"
+        onClick={() => document.getElementById("design-team")?.scrollIntoView({ behavior: "smooth" })}
+      >
+        <span
+          className="text-[9px] tracking-[0.5em] uppercase"
+          style={{ color: isDark ? "rgba(200,168,130,0.45)" : "rgba(100,70,30,0.45)" }}
+        >
           {t("scroll_explore")}
         </span>
-        <div className="w-[1px] h-16 bg-black/10 dark:bg-white/10 relative overflow-hidden">
-          <div className="w-full h-full bg-black dark:bg-white absolute top-0 left-0 animate-scroll-down" />
+        <div
+          className="w-px h-14 relative overflow-hidden"
+          style={{ background: isDark ? "rgba(200,168,130,0.12)" : "rgba(100,70,30,0.12)" }}
+        >
+          <div
+            className="absolute inset-0 w-full"
+            style={{
+              background: isDark ? "#c8a882" : "#8a6030",
+              animation: "scrollPulse 2s ease-in-out infinite",
+            }}
+          />
         </div>
       </div>
-      <style jsx>{`
-        @keyframes scroll-down {
-          0% { transform: translateY(-100%); }
-          50% { transform: translateY(0); }
-          100% { transform: translateY(100%); }
-        }
-        .animate-scroll-down {
-          animation: scroll-down 2s infinite cubic-bezier(0.645, 0.045, 0.355, 1);
+
+      <style>{`
+        @keyframes scrollPulse {
+          0%   { transform: translateY(-100%); opacity: 0; }
+          20%  { opacity: 1; }
+          80%  { opacity: 1; }
+          100% { transform: translateY(100%); opacity: 0; }
         }
       `}</style>
     </section>
