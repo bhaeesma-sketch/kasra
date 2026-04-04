@@ -31,7 +31,9 @@ interface ContentContextType {
   team: TeamMember[];
   categories: Category[];
   updateTeamMemberPhoto: (name: string, newImg: string) => void;
-  updateTeamMemberBio: (name: string, bio: string) => void;
+  updateTeamMemberDetails: (name: string, details: Partial<TeamMember>) => void;
+  addTeamMember: (member: TeamMember) => void;
+  deleteTeamMember: (name: string) => void;
   updateSectionItemImage: (categoryId: string, itemIndex: number, newImg: string) => void;
   addSectionItem: (categoryId: string, item: SectionItem) => void;
   deleteSectionItem: (categoryId: string, itemIndex: number) => void;
@@ -76,23 +78,24 @@ const defaultTeam: TeamMember[] = siteData.team.map(m => ({
 const defaultCategories: Category[] = siteData.categories as Category[];
 
 export function ContentProvider({ children }: { children: ReactNode }) {
-  const [team, setTeam] = useState<TeamMember[]>(() => {
-    const stored = loadFromStorage();
-    return stored ? stored.team : defaultTeam;
-  });
-  const [categories, setCategories] = useState<Category[]>(() => {
-    const stored = loadFromStorage();
-    return stored ? stored.categories : defaultCategories;
-  });
+  const [team, setTeam] = useState<TeamMember[]>(defaultTeam);
+  const [categories, setCategories] = useState<Category[]>(defaultCategories);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
   // Mark as hydrated on mount & fetch latest from Supabase
   useEffect(() => {
-    let raf: number;
-    raf = requestAnimationFrame(() => {
+    // 1. Instantly load from local cache to prevent empty flashes
+    const initStorage = async () => {
+      const stored = loadFromStorage();
+      
+      if (stored) {
+        setTeam(stored.team);
+        setCategories(stored.categories);
+      }
       setHydrated(true);
-    });
+    };
+    initStorage();
     
     // Fetch from Supabase
     const fetchFromSupabase = async () => {
@@ -145,8 +148,16 @@ export function ContentProvider({ children }: { children: ReactNode }) {
     setTeam(prev => prev.map(m => m.name === name ? { ...m, img: newImg } : m));
   }, []);
 
-  const updateTeamMemberBio = useCallback((name: string, bio: string) => {
-    setTeam(prev => prev.map(m => m.name === name ? { ...m, bio } : m));
+  const updateTeamMemberDetails = useCallback((name: string, details: Partial<TeamMember>) => {
+    setTeam(prev => prev.map(m => m.name === name ? { ...m, ...details } : m));
+  }, []);
+
+  const addTeamMember = useCallback((member: TeamMember) => {
+    setTeam(prev => [...prev, member]);
+  }, []);
+
+  const deleteTeamMember = useCallback((name: string) => {
+    setTeam(prev => prev.filter(m => m.name !== name));
   }, []);
 
   const updateSectionItemImage = useCallback((categoryId: string, itemIndex: number, newImg: string) => {
@@ -180,7 +191,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
   return (
     <ContentContext.Provider value={{
       team, categories,
-      updateTeamMemberPhoto, updateTeamMemberBio,
+      updateTeamMemberPhoto, updateTeamMemberDetails, addTeamMember, deleteTeamMember,
       updateSectionItemImage, addSectionItem, deleteSectionItem,
       resetToDefaults, lastSaved
     }}>

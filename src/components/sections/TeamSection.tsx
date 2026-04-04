@@ -23,6 +23,7 @@ export function TeamSection() {
                   alt={member.name} 
                   className="w-full h-full object-cover filter grayscale group-hover:grayscale-0 transition-all duration-500 will-change-transform"
                   loading="lazy"
+                  suppressHydrationWarning
                 />
               </div>
               <h3 className="text-lg font-serif text-black dark:text-white tracking-wider">{member.name}</h3>

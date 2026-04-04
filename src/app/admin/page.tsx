@@ -5,7 +5,14 @@ import {
   Lock, Unlock, Upload, Settings, Users, LayoutTemplate,
   X, Play, ChevronLeft, Video, Check, AlertCircle
 } from "lucide-react";
-import { useContent } from "@/context/ContentContext";
+import { useContent, TeamMember } from "@/context/ContentContext";
+import toast, { Toaster } from "react-hot-toast";
+import { z } from "zod";
+
+const designerSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  country: z.string().min(2, "Country/Role must be valid"),
+});
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type Tab = "sections" | "designers" | "config";
@@ -18,32 +25,16 @@ interface UploadedFile {
   type: string;
 }
 
-interface Designer {
-  id: number;
-  name: string;
-  flag: string;
-  country: string;
-  bio: string;
-  photo: string;
-  videoThumb: string;
-}
-
-const initialDesigners: Designer[] = [
-  { id: 1, name: "Myroslava Yakhnevych", flag: "🇺🇦", country: "Ukraine", bio: "She is from Ukraine. She is currently a student of architecture at National Chernivtsi University, studying for a bachelor's degree in architecture. Her design style is minimal and she is interested in the environment and landscape design. She is now a new member of the project-oriented team working with Kasra Padyab Architecture Group on her design interests.", photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=90&w=800", videoThumb: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&q=80&w=800" },
-  { id: 2, name: "ALİ İSMAİL TANK", flag: "🇹🇷", country: "Turkey", bio: "Ali İsmail is a Turkish architectural designer with a passion for urban design and sustainable communities. He collaborates with the Kasra Padyab Architecture Group, contributing innovative perspectives on modern city planning.", photo: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=90&w=800", videoThumb: "https://images.unsplash.com/photo-1533681904393-9ab6eee7e408?auto=format&fit=crop&q=80&w=800" },
-  { id: 3, name: "Asude BOLAT", flag: "🇹🇷", country: "Turkey", bio: "Asude Bolat is a Turkish designer focused on biophilic design principles and organic architectural forms. She brings a unique sensitivity to material selection and spatial harmony in each project.", photo: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=90&w=800", videoThumb: "https://images.unsplash.com/photo-1538428494232-9c0d8a3ab403?auto=format&fit=crop&q=80&w=800" },
-  { id: 4, name: "Omar Ez Alldin", flag: "🇸🇾", country: "Syria", bio: "Omar is a Syrian-born architect with expertise in heritage restoration and contemporary reinterpretation of traditional Middle Eastern architectural forms.", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=90&w=800", videoThumb: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&q=80&w=800" },
-  { id: 5, name: "Ranim Nasser", flag: "🇸🇾", country: "Syria", bio: "Ranim Nasser is an architectural designer from Syria with a deep interest in computational design and parametric architecture, working closely with the Kasra Padyab group.", photo: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=90&w=800", videoThumb: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80&w=800" },
-  { id: 6, name: "Duaa Adnan Sapooh", flag: "🇮🇶", country: "Iraq", bio: "Duaa is an Iraqi architectural student and designer. She specializes in interior environments and human-centered spatial design, bringing thoughtful storytelling to the group.", photo: "https://images.unsplash.com/photo-1598550874175-4d0ef436c909?auto=format&fit=crop&q=90&w=800", videoThumb: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&q=80&w=800" },
-];
 
 
 
-// ─── Reusable Image Uploader Component ───────────────────────────────────────
-function ImageUploader({ label, onUpload, currentImage }: {
+
+// ─── Reusable Media Uploader Component ───────────────────────────────────────
+function MediaUploader({ label, onUpload, currentImage, acceptVideo }: {
   label: string;
   onUpload?: (file: UploadedFile) => void;
   currentImage?: string;
+  acceptVideo?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(currentImage || null);
@@ -51,13 +42,31 @@ function ImageUploader({ label, onUpload, currentImage }: {
   const [uploadedName, setUploadedName] = useState<string>("");
 
   const handleFile = useCallback((file: File) => {
-    if (!file.type.startsWith("image/")) return;
+    const isVideo = file.type.startsWith("video/");
+    const isImage = file.type.startsWith("image/");
+    if (!isVideo && !isImage) return;
+    
+    // If it's a video but we don't accept video, return
+    if (isVideo && !acceptVideo) {
+      alert("Please upload an image file (JPG, PNG) instead of a video here.");
+      return;
+    }
+
     const name = file.name;
-    // Convert to base64 via canvas (compressed) so it persists in localStorage
     const reader = new FileReader();
     reader.onload = (e) => {
       const dataUrl = e.target?.result as string;
-      // Compress via canvas to keep localStorage manageable (max 1920px wide)
+      
+      // If it's a video, skip canvas compression entirely, it will break
+      if (isVideo) {
+        setPreview(dataUrl);
+        setUploadedName(name);
+        onUpload?.({ name, size: file.size, url: dataUrl, type: file.type });
+        toast.success("Video Upload Success");
+        return;
+      }
+
+      // Compress via canvas for images
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
@@ -67,15 +76,17 @@ function ImageUploader({ label, onUpload, currentImage }: {
         canvas.height = img.height * scale;
         const ctx = canvas.getContext("2d");
         ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const compressed = canvas.toDataURL("image/jpeg", 0.85);
+        const compressed = canvas.toDataURL("image/webp", 0.85);
         setPreview(compressed);
         setUploadedName(name);
-        onUpload?.({ name, size: file.size, url: compressed, type: "image/jpeg" });
+        onUpload?.({ name, size: file.size, url: compressed, type: "image/webp" });
+        toast.success("Image Upload Success");
       };
+      img.onerror = () => toast.error("Server Error: Invalid Image Format");
       img.src = dataUrl;
     };
     reader.readAsDataURL(file);
-  }, [onUpload]);
+  }, [onUpload, acceptVideo]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -111,12 +122,16 @@ function ImageUploader({ label, onUpload, currentImage }: {
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
       >
-        <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleChange} />
+        <input ref={inputRef} type="file" accept={acceptVideo ? "image/*,video/*" : "image/*"} style={{ display: "none" }} onChange={handleChange} />
 
         {preview ? (
           <div style={{ position: "relative" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={preview} alt="preview" style={{ width: "100%", height: 200, objectFit: "cover", display: "block" }} />
+            {preview.startsWith("data:video/") || preview.endsWith(".mp4") ? (
+              <video src={preview} style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }} muted playsInline />
+            ) : (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={preview} alt="preview" style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }} />
+            )}
             <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.2s" }}
               onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
               onMouseLeave={e => (e.currentTarget.style.opacity = "0")}
@@ -135,7 +150,7 @@ function ImageUploader({ label, onUpload, currentImage }: {
             <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", textAlign: "center" }}>
               {isDragging ? "Drop image here" : "Click or drag & drop"}
             </p>
-            <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 10 }}>JPG, PNG, WEBP — Max 50MB — 4K recommended</p>
+            <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 10 }}>{acceptVideo ? "JPG, PNG, WEBP, MP4 — Max 50MB" : "JPG, PNG, WEBP — Max 50MB — 4K recommended"}</p>
           </div>
         )}
       </div>
@@ -198,7 +213,7 @@ function EditModal({ target, onClose, onSaveImage }: {
           </select>
         </div>
 
-        <ImageUploader label="Section Image (4K Recommended)" onUpload={f => setPendingImageUrl(f.url)} />
+        <MediaUploader label="Section Image (4K Recommended)" onUpload={f => setPendingImageUrl(f.url)} />
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 32, paddingTop: 24, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
           <button onClick={onClose} style={{ padding: "12px 24px", background: "transparent", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, color: "#fff", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer" }}>Cancel</button>
@@ -218,14 +233,45 @@ export default function AdminDashboard() {
   const [passcode, setPasscode] = useState("");
   const [shakeError, setShakeError] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("sections");
-  const [selectedDesigner, setSelectedDesigner] = useState<Designer | null>(null);
+  const [selectedDesigner, setSelectedDesigner] = useState<TeamMember | null>(null);
   const [editTarget, setEditTarget] = useState<{ title: string; titleFa: string; category: string } | "new" | null>(null);
   const [doorsOpen, setDoorsOpen] = useState(false);
-  const [designers] = useState(initialDesigners);
   // Track which section item is being edited: { categoryId, itemIndex }
   const [editSectionEntry, setEditSectionEntry] = useState<{ categoryId: string; itemIndex: number; title: string; currentImg: string } | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const { updateTeamMemberPhoto, updateSectionItemImage, categories } = useContent();
+  const { team, updateTeamMemberPhoto, updateTeamMemberDetails, addTeamMember, deleteTeamMember, updateSectionItemImage, categories } = useContent();
+
+  const handleAddDesigner = () => {
+    const name = prompt("Enter Designer Name:");
+    if (!name) return;
+    const country = prompt("Enter Designer Country:");
+    if (!country) return;
+
+    const validation = designerSchema.safeParse({ name, country });
+    if (!validation.success) {
+      toast.error(validation.error.issues[0].message);
+      return;
+    }
+
+    addTeamMember({
+      name: validation.data.name,
+      country: validation.data.country,
+      role: "Designer",
+      flag: "🌍",
+      bio: "New team member bio...",
+      img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=800",
+      videoThumb: ""
+    });
+    toast.success("Designer Created! You can now edit their profile.");
+  };
+
+  const handleDeleteDesigner = (name: string) => {
+    if (confirm(`Are you sure you want to completely delete ${name}?`)) {
+      deleteTeamMember(name);
+      setView("dashboard");
+      toast.success("Delete Confirmed");
+    }
+  };
 
   const CORRECT_PIN = "1994";
 
@@ -322,11 +368,19 @@ export default function AdminDashboard() {
           />
         )}
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 24px" }}>
-          <button onClick={() => setView("dashboard")}
-            style={{ display: "flex", alignItems: "center", gap: 8, color: "rgba(255,255,255,0.4)", background: "none", border: "none", cursor: "pointer", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", marginBottom: 40, transition: "color 0.2s" }}
-            onMouseEnter={e => (e.currentTarget.style.color = "#fff")} onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.4)")}>
-            <ChevronLeft size={16} /> Back to Dashboard
-          </button>
+          {/* Control Bar: Back & Delete */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 40 }}>
+            <button onClick={() => setView("dashboard")}
+              style={{ display: "flex", alignItems: "center", gap: 8, color: "rgba(255,255,255,0.4)", background: "none", border: "none", cursor: "pointer", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", transition: "color 0.2s" }}
+              onMouseEnter={e => (e.currentTarget.style.color = "#fff")} onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.4)")}>
+              <ChevronLeft size={16} /> Back to Dashboard
+            </button>
+            <button onClick={() => handleDeleteDesigner(d.name)}
+              style={{ padding: "8px 16px", background: "rgba(239,68,64,0.1)", border: "1px solid rgba(239,68,64,0.2)", borderRadius: 8, color: "#ef4444", fontWeight: 700, fontSize: 10, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "background 0.2s" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "rgba(239,68,64,0.2)")} onMouseLeave={e => (e.currentTarget.style.background = "rgba(239,68,64,0.1)")}>
+              <X size={12} /> Delete Profile
+            </button>
+          </div>
 
           {/* Three-column layout: Flag | Photo | Video */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 2fr", gap: 28, marginBottom: 48, alignItems: "start" }}>
@@ -345,47 +399,64 @@ export default function AdminDashboard() {
             </div>
 
             {/* Photo with replace button */}
-            <div style={{ borderRadius: 12, overflow: "hidden", aspectRatio: "3/4", position: "relative", cursor: "pointer" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={d.photo} alt={d.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-              <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, opacity: 0, transition: "opacity 0.2s" }}
-                onMouseEnter={e => (e.currentTarget.style.opacity = "1")} onMouseLeave={e => (e.currentTarget.style.opacity = "0")}>
-                <Upload size={24} color="#fff" />
-                <span style={{ color: "#fff", fontSize: 10, letterSpacing: 2, textTransform: "uppercase" }}>Replace Photo</span>
-              </div>
+            <div style={{ position: "relative", cursor: "pointer", display: "flex", flexDirection: "column" }}>
+              <MediaUploader
+                label="Replace Designer Photo"
+                currentImage={d.img}
+                onUpload={(file) => {
+                  updateTeamMemberPhoto(d.name, file.url);
+                  setSelectedDesigner(prev => prev ? { ...prev, img: file.url } : prev);
+                }}
+              />
             </div>
 
-            {/* Intro Video */}
-            <div style={{ borderRadius: 12, overflow: "hidden", aspectRatio: "3/4", position: "relative", background: "#111", cursor: "pointer" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={d.videoThumb} alt="intro" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.65, display: "block" }} />
-              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
-                <div style={{ width: 60, height: 60, borderRadius: "50%", background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(255,255,255,0.5)" }}>
-                  <Play size={22} color="#fff" fill="#fff" style={{ marginLeft: 3 }} />
+            {/* Column 3: Video and Upload */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {/* Intro Video */}
+              <div style={{ borderRadius: 12, overflow: "hidden", aspectRatio: "3/4", position: "relative", background: "#111", cursor: "pointer" }}>
+                {d.videoThumb && d.videoThumb.startsWith("data:video/") ? (
+                  <video src={d.videoThumb} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85, display: "block" }} autoPlay muted loop playsInline />
+                ) : d.videoThumb ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={d.videoThumb} alt="intro" style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.65, display: "block" }} />
+                ) : null}
+                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
+                  <div style={{ width: 60, height: 60, borderRadius: "50%", background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(255,255,255,0.5)" }}>
+                    <Play size={22} color="#fff" fill="#fff" style={{ marginLeft: 3 }} />
+                  </div>
+                  <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 10, letterSpacing: 3, textTransform: "uppercase" }}>Self Introduction</span>
                 </div>
-                <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 10, letterSpacing: 3, textTransform: "uppercase" }}>Self Introduction</span>
+                <div style={{ position: "absolute", bottom: 12, right: 12, background: "rgba(0,0,0,0.7)", padding: "4px 8px", borderRadius: 4, fontSize: 9, color: "rgba(255,255,255,0.7)", letterSpacing: 1, textTransform: "uppercase" }}>Video</div>
               </div>
-              <div style={{ position: "absolute", bottom: 12, right: 12, background: "rgba(0,0,0,0.7)", padding: "4px 8px", borderRadius: 4, fontSize: 9, color: "rgba(255,255,255,0.7)", letterSpacing: 1, textTransform: "uppercase" }}>Video</div>
+              
+              {/* Upload intro video thumb */}
+              <MediaUploader 
+                label="Self Intro Video File" 
+                acceptVideo={true}
+                currentImage={d.videoThumb} 
+                onUpload={(f) => {
+                  updateTeamMemberDetails(d.name, { videoThumb: f.url });
+                  setSelectedDesigner(prev => prev ? { ...prev, videoThumb: f.url } : prev);
+                }} 
+              />
             </div>
           </div>
 
-          {/* Name + Bio */}
+          {/* Name + Bio Editor */}
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 40 }}>
             <h1 style={{ fontFamily: "serif", fontSize: 28, letterSpacing: 4, textTransform: "uppercase", marginBottom: 20 }}>{d.name}</h1>
-            <p style={{ color: "rgba(255,255,255,0.6)", lineHeight: 1.9, maxWidth: 680, fontSize: 15 }}>{d.bio}</p>
-          </div>
-
-          {/* Upload new photo for this designer */}
-          <div style={{ marginTop: 48, maxWidth: 500 }}>
-            <ImageUploader
-              label="Replace Profile Photo"
-              currentImage={d.photo}
-              onUpload={(file) => {
-                updateTeamMemberPhoto(d.name, file.url);
-                setSelectedDesigner(prev => prev ? { ...prev, photo: file.url } : prev);
+            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Biography</p>
+            <textarea 
+              value={d.bio} 
+              onChange={e => {
+                const newBio = e.target.value;
+                updateTeamMemberDetails(d.name, { bio: newBio });
+                setSelectedDesigner(prev => prev ? { ...prev, bio: newBio } : prev);
               }}
+              style={{ width: "100%", minHeight: 140, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, padding: 16, color: "#fff", fontSize: 14, outline: "none", resize: "vertical", lineHeight: 1.6 }}
             />
           </div>
+
         </div>
       </div>
     );
@@ -394,6 +465,7 @@ export default function AdminDashboard() {
   // ── Dashboard ─────────────────────────────────────────────────────────────
   return (
     <div style={{ minHeight: "100vh", background: "#050505", color: "#fff" }}>
+      <Toaster position="bottom-right" toastOptions={{ style: { background: '#222', color: '#fff', border: '1px solid #333' } }} />
       {/* Section item edit overlay */}
       {editSectionEntry !== null && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", backdropFilter: "blur(16px)", zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
@@ -402,7 +474,7 @@ export default function AdminDashboard() {
               <h2 style={{ fontFamily: "serif", fontSize: 18, letterSpacing: 4, textTransform: "uppercase" }}>Edit Image: {editSectionEntry.title}</h2>
               <button onClick={() => setEditSectionEntry(null)} style={{ background: "rgba(255,255,255,0.06)", border: "none", borderRadius: "50%", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#fff" }}><X size={16} /></button>
             </div>
-            <ImageUploader
+            <MediaUploader
               label="Replace Section Image (4K Recommended)"
               currentImage={editSectionEntry.currentImg}
               onUpload={(file) => {
@@ -440,7 +512,7 @@ export default function AdminDashboard() {
 
         {/* Stats row */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 48 }}>
-          {[ { label: "Total Sections", value: categories.reduce((a, c) => a + c.items.length, 0), color: "#d4af37" }, { label: "Designers", value: designers.length, color: "#60a5fa" }, { label: "Total Images", value: categories.reduce((a, c) => a + c.items.length, 0), color: "#34d399" }, { label: "Categories", value: categories.length, color: "#f472b6" } ].map(s => (
+          {[ { label: "Total Sections", value: categories.reduce((a, c) => a + c.items.length, 0), color: "#d4af37" }, { label: "Designers", value: team.length, color: "#60a5fa" }, { label: "Total Images", value: categories.reduce((a, c) => a + c.items.length, 0), color: "#34d399" }, { label: "Categories", value: categories.length, color: "#f472b6" } ].map(s => (
             <div key={s.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: "20px 24px" }}>
               <p style={{ fontSize: 28, fontFamily: "serif", color: s.color, fontWeight: 300 }}>{s.value}</p>
               <p style={{ fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "rgba(255,255,255,0.35)", marginTop: 4 }}>{s.label}</p>
@@ -516,21 +588,21 @@ export default function AdminDashboard() {
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
                   <h2 style={{ fontFamily: "serif", fontSize: 20, letterSpacing: 4, textTransform: "uppercase" }}>Design Team</h2>
-                  <button style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", background: "#d4af37", border: "none", borderRadius: 8, color: "#000", fontWeight: 700, fontSize: 10, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer" }}>
+                  <button onClick={handleAddDesigner} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", background: "#d4af37", border: "none", borderRadius: 8, color: "#000", fontWeight: 700, fontSize: 10, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer" }}>
                     + Add Designer
                   </button>
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 18 }}>
-                  {designers.map(d => (
-                    <div key={d.id}
+                  {team.map(d => (
+                    <div key={d.name}
                       onClick={() => { setSelectedDesigner(d); setView("designer-detail"); }}
                       style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, overflow: "hidden", cursor: "pointer", transition: "border-color 0.2s, transform 0.2s" }}
                       onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(212,175,55,0.4)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)"; }}
                       onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.07)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; }}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={d.photo} alt={d.name} style={{ width: "100%", aspectRatio: "3/4", objectFit: "cover", display: "block" }} />
+                      <img src={d.img} alt={d.name} style={{ width: "100%", aspectRatio: "3/4", objectFit: "cover", display: "block" }} />
                       <div style={{ padding: "14px 18px" }}>
                         <div style={{ fontSize: 20, marginBottom: 4 }}>{d.flag}</div>
                         <h3 style={{ fontFamily: "serif", fontSize: 14, letterSpacing: 1, marginBottom: 2 }}>{d.name}</h3>
@@ -568,7 +640,7 @@ export default function AdminDashboard() {
 
                   {/* Logo upload */}
                   <div style={{ marginTop: 8 }}>
-                    <ImageUploader label="Site Logo / Favicon" />
+                    <MediaUploader label="Site Logo / Favicon" />
                   </div>
 
                   <button style={{ alignSelf: "flex-start", padding: "13px 32px", background: "#d4af37", border: "none", borderRadius: 10, color: "#000", fontWeight: 700, fontSize: 11, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer", marginTop: 8 }}>

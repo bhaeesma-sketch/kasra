@@ -142,6 +142,7 @@ export function Gallery() {
                 <div className="w-full h-full relative overflow-hidden rounded-xl bg-neutral-200 dark:bg-neutral-900 border border-black/5 dark:border-white/10">
                   <div className="absolute inset-[-15%] w-[130%] h-[130%]">
                     <img 
+                      suppressHydrationWarning
                       src={cat.img} 
                       alt="Project Category" 
                       className="card-image-inner w-full h-full object-cover filter saturate-50 dark:saturate-0 brightness-90 dark:brightness-75 transition-all duration-700 group-hover:saturate-100 group-hover:brightness-100 dark:group-hover:brightness-100 scale-100 group-hover:scale-105"
