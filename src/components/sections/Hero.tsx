@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import gsap from "gsap";
 import { useTheme } from "next-themes";
 import Image from "next/image";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
 const HERO_IMAGES = [
@@ -158,13 +159,15 @@ export function Hero() {
           animate={{ y: 0 }}
           transition={{ duration: 2, ease: "expo.out", delay: 1 }}
         >
-          <Image 
-            src="/assets/new-branding-logo.png" 
-            alt="Logo" 
-            width={220} 
-            height={44} 
-            className="w-40 md:w-56 dark:invert brightness-110" 
-          />
+          <Link href="/" className="block">
+            <Image 
+              src="/assets/new-branding-logo.png" 
+              alt="Logo" 
+              width={220} 
+              height={44} 
+              className="w-40 md:w-56 dark:invert brightness-110" 
+            />
+          </Link>
         </motion.div>
       </div>
 

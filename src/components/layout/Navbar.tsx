@@ -8,6 +8,7 @@ import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function Navbar() {
   const { language, setLanguage } = useLanguage();
@@ -97,9 +98,12 @@ export function Navbar() {
               </button>
             </div>
 
-            <button className="bg-black dark:bg-accent text-white dark:text-black px-6 py-2.5 text-[8px] uppercase tracking-[0.3em] font-bold hover:bg-accent dark:hover:bg-white transition-all duration-500">
+            <Link 
+              href="#contact"
+              className="bg-black dark:bg-accent text-white dark:text-black px-6 py-2.5 text-[8px] uppercase tracking-[0.3em] font-bold hover:bg-accent dark:hover:bg-white transition-all duration-500"
+            >
                {language === 'en' ? 'Get in Touch' : 'ارتباط با ما'}
-            </button>
+            </Link>
           </div>
         </div>
 
