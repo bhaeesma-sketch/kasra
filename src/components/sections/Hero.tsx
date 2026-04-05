@@ -119,129 +119,132 @@ export function Hero() {
         <AnimatePresence mode="wait">
           <motion.div
             key={currentImageIndex}
-            initial={{ opacity: 0, scale: 1.15 }}
+            initial={{ opacity: 0, scale: 1.25, filter: "brightness(0.5) contrast(1.2)" }}
             animate={{ 
               opacity: 1, 
-              scale: 1.05,
-              x: mousePos.x * -10,
-              y: mousePos.y * -10
+              scale: 1.1,
+              filter: "brightness(0.7) contrast(1.1)",
+              x: mousePos.x * -15,
+              y: mousePos.y * -15
             }}
-            exit={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
+            exit={{ opacity: 0, scale: 1, filter: "blur(40px) brightness(0.2)" }}
             transition={{ 
-              opacity: { duration: 2.5, ease: "easeInOut" },
-              scale: { duration: 8, ease: "linear" },
-              x: { duration: 2, ease: "easeOut" },
-              y: { duration: 2, ease: "easeOut" }
+              opacity: { duration: 3, ease: "easeInOut" },
+              scale: { duration: 6, ease: "circOut" },
+              x: { duration: 2.5, ease: "easeOut" },
+              y: { duration: 2.5, ease: "easeOut" }
             }}
             className="absolute inset-0"
           >
             <Image
               src={HERO_IMAGES[currentImageIndex]}
-              alt="Architectural Masterpiece"
+              alt="Architectural Luxury"
               fill
               priority
-              className="object-cover opacity-40 dark:opacity-40 grayscale-40"
+              className="object-cover grayscale-25"
             />
           </motion.div>
         </AnimatePresence>
         
-        {/* Modern Layered Gradients */}
-        <div className={`absolute inset-0 z-[1] ${isDark ? 'bg-linear-to-b from-black/80 via-transparent to-black/80' : 'bg-linear-to-b from-white/60 via-transparent to-white/60'}`} />
-        <div className={`absolute inset-0 z-[1] ${isDark ? 'bg-linear-to-r from-black/60 via-transparent to-black/60' : 'bg-linear-to-r from-white/60 via-transparent to-white/60'}`} />
+        {/* Luxury Vignette & Depth */}
+        <div className={`absolute inset-0 z-[1] ${isDark ? 'bg-radial-to-c from-transparent via-black/20 to-black/90' : 'bg-radial-to-c from-transparent via-white/10 to-white/70'}`} />
+        <div className={`absolute inset-0 z-[1] ${isDark ? 'bg-linear-to-b from-black/60 via-transparent to-black/80' : 'bg-linear-to-b from-white/30 via-transparent to-white/50'}`} />
         
-        {/* Moving Light Effect */}
+        {/* Animated Light Leak / Shine */}
         <motion.div 
           animate={{
-            x: mousePos.x * 50,
-            y: mousePos.y * 50,
+            x: [mousePos.x * 100, mousePos.x * -100],
+            opacity: [0.1, 0.2, 0.1]
           }}
-          className="absolute inset-0 z-[2] opacity-30 pointer-events-none"
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-0 right-0 w-[60vw] h-full z-[2] pointer-events-none skew-x-[-35deg]"
           style={{
-            background: `radial-gradient(circle at ${50 + mousePos.x * 10}% ${50 + mousePos.y * 10}%, ${isDark ? 'rgba(200, 168, 130, 0.15)' : 'rgba(100, 70, 30, 0.15)'} 0%, transparent 60%)`
+            background: `linear-gradient(90deg, transparent 0%, ${isDark ? 'rgba(200, 168, 130, 0.08)' : 'rgba(100, 70, 30, 0.05)'} 50%, transparent 100%)`
           }}
         />
       </div>
 
-      {/* Subtle grain texture */}
-      <div
-        className="absolute inset-0 z-[5] pointer-events-none opacity-[0.05]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-          backgroundSize: "128px"
-        }}
-      />
-
       {/* ─── Architectural Grid Decoration ─── */}
-      <div className={`absolute inset-0 z-[3] pointer-events-none overflow-hidden ${isDark ? 'opacity-10' : 'opacity-[0.08]'}`}>
-        <div className={`absolute top-0 left-0 w-full h-[1px] ${isDark ? 'bg-white' : 'bg-black'} transform translate-y-[20vh]`} />
-        <div className={`absolute top-0 left-0 w-full h-[1px] ${isDark ? 'bg-white' : 'bg-black'} transform translate-y-[80vh]`} />
-        <div className={`absolute top-0 left-0 w-[1px] h-full ${isDark ? 'bg-white' : 'bg-black'} transform translate-x-[20vw]`} />
-        <div className={`absolute top-0 left-0 w-[1px] h-full ${isDark ? 'bg-white' : 'bg-black'} transform translate-x-[80vw]`} />
+      <div className={`absolute inset-0 z-[3] pointer-events-none overflow-hidden ${isDark ? 'opacity-20' : 'opacity-[0.12]'}`}>
+        <div className={`absolute top-0 left-0 w-full h-[0.5px] ${isDark ? 'bg-accent/40' : 'bg-accent/60'} transform translate-y-[15vh]`} />
+        <div className={`absolute bottom-0 left-0 w-full h-[0.5px] ${isDark ? 'bg-accent/40' : 'bg-accent/60'} transform -translate-y-[15vh]`} />
+        <div className={`absolute left-0 top-0 w-[0.5px] h-full ${isDark ? 'bg-accent/40' : 'bg-accent/60'} transform translate-x-[12vw]`} />
+        <div className={`absolute right-0 top-0 w-[0.5px] h-full ${isDark ? 'bg-accent/40' : 'bg-accent/60'} transform -translate-x-[12vw]`} />
         
-        <div className={`absolute top-[20vh] left-[20vw] text-[10px] tracking-widest font-light p-4 uppercase ${isDark ? 'text-white' : 'text-black'}`}>
-          Kasra Vault 2026 / System.01
+        <div className={`absolute top-[15vh] left-[12vw] text-[9px] tracking-[0.8em] font-light p-6 uppercase ${isDark ? 'text-accent/60' : 'text-accent/80'}`}>
+          Collection . 026 / Architecture & Design
         </div>
       </div>
 
       {/* ─── Main Content ─── */}
-      <div className="relative z-10 text-center flex flex-col items-center select-none" style={{ perspective: "1500px" }}>
-        <div className="mb-6 opacity-60">
-          <motion.div 
-            initial={{ width: 0 }}
-            animate={{ width: "120px" }}
-            transition={{ duration: 1.5, ease: "easeInOut", delay: 1 }}
-            className="h-px bg-accent mx-auto" 
-          />
-        </div>
+      <div className="relative z-10 text-center flex flex-col items-center select-none" style={{ perspective: "2000px" }}>
+        <motion.div 
+          initial={{ opacity: 0, letterSpacing: "1.5em", y: -20 }}
+          animate={{ opacity: 0.6, letterSpacing: "0.8em", y: 0 }}
+          transition={{ duration: 2, ease: "expo.out", delay: 1.5 }}
+          className="text-[10px] uppercase font-light text-black dark:text-white mb-12"
+        >
+          {language === 'en' ? 'Pioneering Future Spaces' : 'پیشگام فضاهای آینده'}
+        </motion.div>
 
         <h1
           ref={titleRef}
-          className="font-serif leading-none tracking-[-0.04em] uppercase"
+          className="font-serif leading-[0.9] tracking-[-0.05em] uppercase"
           style={{
-            fontSize: "clamp(3.5rem, 12vw, 10rem)",
-            color: isDark ? "#f5ede0" : "#1a0f05",
-            textShadow: isDark 
-              ? "0 10px 40px rgba(0,0,0,0.4)" 
-              : "0 10px 30px rgba(100, 60, 20, 0.08)",
+            fontSize: "clamp(4rem, 15vw, 13rem)",
+            color: isDark ? "#fdfcf9" : "#1a120b",
           }}
         >
           {t("hero_title")}
         </h1>
 
-        <p
-          ref={subtitleRef}
-          className="font-light uppercase tracking-[0.8em] mt-8 flex items-center gap-4"
-          style={{
-            fontSize: "clamp(0.6rem, 1.2vw, 0.85rem)",
-            color: isDark ? "rgba(245, 237, 224, 0.8)" : "rgba(26, 15, 5, 0.7)",
-          }}
-        >
-          <span className={`w-8 h-[1px] ${isDark ? 'bg-accent/40' : 'bg-black/10'}`} />
-          {t("hero_subtitle")}
-          <span className={`w-8 h-[1px] ${isDark ? 'bg-accent/40' : 'bg-black/10'}`} />
-        </p>
-
-        <div ref={taglineRef} className="mt-12 flex flex-col items-center gap-6 opacity-0 text-black dark:text-white">
-          <span
-            className={`text-[11px] tracking-[0.4em] uppercase font-light ${isDark ? 'text-accent/90' : 'text-accent'}`}
+        <div className="mt-8 flex items-center justify-center gap-6 overflow-hidden">
+          <motion.div 
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 1.5, ease: "expo.inOut", delay: 2 }}
+            className="w-16 h-[0.5px] bg-accent/40 origin-left" 
+          />
+          <p
+            ref={subtitleRef}
+            className="font-serif italic tracking-widest text-black/60 dark:text-white/60"
+            style={{ fontSize: "clamp(0.8rem, 2vw, 1.2rem)" }}
           >
-            Design. Psychology. Innovation.
-          </span>
-          
-          <div className="flex gap-12 mt-4">
-            <div className="flex flex-col items-center">
-              <span className="text-[20px] font-serif">12+</span>
-              <span className="text-[8px] uppercase tracking-widest opacity-40">Years Exp</span>
+            {t("hero_subtitle")}
+          </p>
+          <motion.div 
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 1.5, ease: "expo.inOut", delay: 2 }}
+            className="w-16 h-[0.5px] bg-accent/40 origin-right" 
+          />
+        </div>
+
+        <div ref={taglineRef} className="mt-20 flex flex-col items-center gap-10 opacity-0">
+          <div className="flex gap-16 md:gap-24 relative">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-px bg-linear-to-r from-transparent via-accent/30 to-transparent" />
+            
+            <div className="flex flex-col items-center group cursor-pointer" data-cursor="hover">
+              <span className="text-[28px] font-serif transition-colors group-hover:text-accent duration-500">12</span>
+              <span className="text-[8px] uppercase tracking-[0.5em] opacity-40 group-hover:opacity-100 transition-all duration-500">Years Exp</span>
             </div>
-            <div className="flex flex-col items-center">
-              <span className="text-[20px] font-serif">450+</span>
-              <span className="text-[8px] uppercase tracking-widest opacity-40">Projects</span>
+            <div className="flex flex-col items-center group cursor-pointer" data-cursor="hover">
+              <span className="text-[28px] font-serif transition-colors group-hover:text-accent duration-500">450</span>
+              <span className="text-[8px] uppercase tracking-[0.5em] opacity-40 group-hover:opacity-100 transition-all duration-500">Projects</span>
             </div>
-            <div className="flex flex-col items-center">
-              <span className="text-[20px] font-serif">25k</span>
-              <span className="text-[8px] uppercase tracking-widest opacity-40">Students</span>
+            <div className="flex flex-col items-center group cursor-pointer" data-cursor="hover">
+              <span className="text-[28px] font-serif transition-colors group-hover:text-accent duration-500">25</span>
+              <span className="text-[8px] uppercase tracking-[0.5em] opacity-40 group-hover:opacity-100 transition-all duration-500">Awards</span>
             </div>
           </div>
+          
+          <motion.div 
+            animate={{ y: [0, 5, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="text-[10px] tracking-[0.6em] uppercase text-accent font-medium mt-4"
+          >
+            Design . Psychology . Innovation
+          </motion.div>
         </div>
       </div>
 
