@@ -46,129 +46,109 @@ export function Navbar() {
   return (
     <nav
       className={cn(
-        "fixed top-0 left-0 w-full z-50 transition-all duration-700 text-black dark:text-white border-b border-black/5 dark:border-white/5",
-        scrolled ? "bg-white/80 dark:bg-black/80 backdrop-blur-xl py-4" : "bg-transparent py-8",
-        mobileMenuOpen ? "bg-white dark:bg-neutral-950 h-screen" : ""
+        "fixed top-0 right-0 w-full lg:w-fit z-100 transition-all duration-700",
+        scrolled ? "bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-black/5 dark:border-white/5 py-4" : "bg-transparent py-10"
       )}
     >
-      <div className="container mx-auto px-6 md:px-12 flex items-center justify-between max-w-[1600px]">
-        {/* Logo Section */}
-        <Link href="/" className="flex items-center group relative z-50">
-          <div className="overflow-hidden h-8 md:h-9">
-            <Image 
-              src="/assets/new-branding-logo.png" 
-              alt="KASRAPADYAB" 
-              width={180} 
-              height={36} 
-              className="h-full w-auto object-contain transition-transform duration-700 group-hover:scale-110 dark:invert" 
-              priority
-            />
-          </div>
-          <div className="absolute -bottom-2 left-0 w-0 h-px bg-accent transition-all duration-500 group-hover:w-full" />
-        </Link>
+      <div className="container mx-auto px-6 md:px-12 flex items-center justify-end">
         
-        {/* Desktop Navigation */}
-        <div className="hidden lg:flex items-center gap-8 xl:gap-12">
-          <div className="flex gap-6 xl:gap-10 items-center text-[8px] xl:text-[9px] tracking-[0.3em] uppercase font-semibold">
-            {navLinks.map((link) => (
+        {/* Desktop Navigation - Clean Editorial Look */}
+        <div className="hidden lg:flex items-center gap-12">
+          <div className="flex gap-10 items-center text-[8.5px] tracking-[0.4em] uppercase font-bold text-black dark:text-white">
+            {navLinks.slice(0, 6).map((link) => (
               <a 
                 key={link.key} 
                 href={link.href} 
-                className="relative py-2 hover:text-accent transition-colors duration-300 group"
+                className="hover:text-accent transition-colors duration-500 relative group"
               >
                 {link.key}
-                <span className="absolute bottom-0 left-0 w-0 h-px bg-accent transition-all duration-500 group-hover:w-full" />
+                <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-accent transition-all duration-500 group-hover:w-full" />
               </a>
             ))}
           </div>
 
-          <div className="h-6 w-px bg-black/10 dark:bg-white/10 mx-2" />
+          <div className="h-4 w-px bg-black/10 dark:bg-white/10" />
 
           {/* Controls */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             {mounted && (
               <button
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-accent"
+                className="text-accent hover:scale-110 transition-transform"
                 aria-label="Toggle Theme"
               >
-                {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+                {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
               </button>
             )}
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 text-[9px] font-bold tracking-widest text-black/40 dark:text-white/40">
               <button
                 onClick={() => setLanguage("en")}
-                className={cn(
-                  "text-[9px] tracking-widest transition-all duration-300",
-                  language === "en" ? "text-accent font-bold scale-110" : "opacity-40 hover:opacity-100"
-                )}
+                className={cn("transition-all", language === "en" && "text-accent scale-110")}
               >
                 EN
               </button>
-              <span className="text-[8px] opacity-20">/</span>
+              <span>/</span>
               <button
                 onClick={() => setLanguage("fa")}
-                className={cn(
-                  "text-[9px] tracking-widest transition-all duration-300",
-                  language === "fa" ? "text-accent font-bold scale-110" : "opacity-40 hover:opacity-100"
-                )}
+                className={cn("transition-all", language === "fa" && "text-accent scale-110")}
               >
                 FA
               </button>
             </div>
+
+            <button className="bg-black dark:bg-accent text-white dark:text-black px-6 py-2.5 text-[8px] uppercase tracking-[0.3em] font-bold hover:bg-accent dark:hover:bg-white transition-all duration-500">
+               {language === 'en' ? 'Get in Touch' : 'ارتباط با ما'}
+            </button>
           </div>
         </div>
 
         {/* Mobile Toggle */}
         <button 
-          className="lg:hidden relative z-50 w-10 h-10 flex items-center justify-center group"
+          className="lg:hidden w-10 h-10 flex items-center justify-center relative z-110"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
-          <div className="flex flex-col gap-1.5 items-end">
-            <span className={cn("h-px bg-current transition-all duration-300", mobileMenuOpen ? "w-6 rotate-45 translate-y-2" : "w-6")} />
+          <div className="flex flex-col gap-2 items-end">
+            <span className={cn("h-px bg-current transition-all duration-300", mobileMenuOpen ? "w-6 rotate-45 translate-y-2.5" : "w-6")} />
             <span className={cn("h-px bg-current transition-all duration-300", mobileMenuOpen ? "opacity-0" : "w-4")} />
-            <span className={cn("h-px bg-current transition-all duration-300", mobileMenuOpen ? "w-6 -rotate-45 -translate-y-2" : "w-5")} />
+            <span className={cn("h-px bg-current transition-all duration-300", mobileMenuOpen ? "w-6 -rotate-45 -translate-y-2.5" : "w-5")} />
           </div>
         </button>
       </div>
 
-        {/* Mobile Menu Content */}
+      {/* Mobile Fullscreen Menu */}
+      <AnimatePresence>
         {mobileMenuOpen && (
-          <div className="flex-1 flex flex-col justify-center items-center gap-6 mt-8">
-            {navLinks.map((link) => (
-              <a 
-                key={link.key} 
-                href={link.href} 
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-xl font-bold tracking-widest uppercase hover:text-red-600 transition-colors"
-              >
-                {link.key}
-              </a>
-            ))}
-            
-            <div className="flex gap-4 mt-8">
-              <button
-                onClick={() => { setLanguage("en"); setMobileMenuOpen(false); }}
-                className={cn(
-                  "px-6 py-2 rounded-full font-bold",
-                  language === "en" ? "bg-black text-white dark:bg-white dark:text-black" : "border border-neutral-200 dark:border-neutral-800"
-                )}
-              >
-                English
-              </button>
-              <button
-                onClick={() => { setLanguage("fa"); setMobileMenuOpen(false); }}
-                className={cn(
-                  "px-6 py-2 rounded-full font-bold",
-                  language === "fa" ? "bg-black text-white dark:bg-white dark:text-black" : "border border-neutral-200 dark:border-neutral-800"
-                )}
-              >
-                فارسی
-              </button>
-            </div>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0, x: "100%" }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed inset-0 bg-white dark:bg-black z-105 flex flex-col p-12 justify-center"
+          >
+             <div className="flex flex-col gap-10">
+                {navLinks.map((link, idx) => (
+                  <motion.a 
+                    key={link.key}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-4xl font-serif uppercase tracking-tight hover:text-accent"
+                  >
+                    {link.key}
+                  </motion.a>
+                ))}
+             </div>
+             
+             <div className="mt-20 flex gap-8 text-sm uppercase tracking-[0.4em] text-black/40 dark:text-white/40">
+                <button onClick={() => setLanguage("en")} className={cn(language === 'en' && "text-accent")}>English</button>
+                <button onClick={() => setLanguage("fa")} className={cn(language === 'fa' && "text-accent")}>Persian</button>
+             </div>
+          </motion.div>
         )}
+      </AnimatePresence>
     </nav>
   );
 }

@@ -114,137 +114,175 @@ export function Hero() {
         style={{ background: isDark ? "var(--bg-dark)" : "var(--bg-main)", transformOrigin: "top" }}
       />
 
-      {/* Cinematic Background Slider */}
-      <div className="absolute inset-0 z-0">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentImageIndex}
-            initial={{ opacity: 0, scale: 1.25, filter: "brightness(0.5) contrast(1.2)" }}
-            animate={{ 
-              opacity: 1, 
-              scale: 1.1,
-              filter: "brightness(0.7) contrast(1.1)",
-              x: mousePos.x * -15,
-              y: mousePos.y * -15
-            }}
-            exit={{ opacity: 0, scale: 1, filter: "blur(40px) brightness(0.2)" }}
-            transition={{ 
-              opacity: { duration: 3, ease: "easeInOut" },
-              scale: { duration: 6, ease: "circOut" },
-              x: { duration: 2.5, ease: "easeOut" },
-              y: { duration: 2.5, ease: "easeOut" }
-            }}
-            className="absolute inset-0"
-          >
-            <Image
-              src={HERO_IMAGES[currentImageIndex]}
-              alt="Architectural Luxury"
-              fill
-              priority
-              className="object-cover grayscale-25"
-            />
-          </motion.div>
-        </AnimatePresence>
-        
-        {/* Luxury Vignette & Depth */}
-        <div className={`absolute inset-0 z-[1] ${isDark ? 'bg-radial-to-c from-transparent via-black/20 to-black/90' : 'bg-radial-to-c from-transparent via-white/10 to-white/70'}`} />
-        <div className={`absolute inset-0 z-[1] ${isDark ? 'bg-linear-to-b from-black/60 via-transparent to-black/80' : 'bg-linear-to-b from-white/30 via-transparent to-white/50'}`} />
-        
-        {/* Animated Light Leak / Shine */}
-        <motion.div 
-          animate={{
-            x: [mousePos.x * 100, mousePos.x * -100],
-            opacity: [0.1, 0.2, 0.1]
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-0 right-0 w-[60vw] h-full z-[2] pointer-events-none skew-x-[-35deg]"
-          style={{
-            background: `linear-gradient(90deg, transparent 0%, ${isDark ? 'rgba(200, 168, 130, 0.08)' : 'rgba(100, 70, 30, 0.05)'} 50%, transparent 100%)`
-          }}
-        />
-      </div>
-
-      {/* ─── Architectural Grid Decoration ─── */}
-      <div className={`absolute inset-0 z-[3] pointer-events-none overflow-hidden ${isDark ? 'opacity-20' : 'opacity-[0.12]'}`}>
-        <div className={`absolute top-0 left-0 w-full h-[0.5px] ${isDark ? 'bg-accent/40' : 'bg-accent/60'} transform translate-y-[15vh]`} />
-        <div className={`absolute bottom-0 left-0 w-full h-[0.5px] ${isDark ? 'bg-accent/40' : 'bg-accent/60'} transform -translate-y-[15vh]`} />
-        <div className={`absolute left-0 top-0 w-[0.5px] h-full ${isDark ? 'bg-accent/40' : 'bg-accent/60'} transform translate-x-[12vw]`} />
-        <div className={`absolute right-0 top-0 w-[0.5px] h-full ${isDark ? 'bg-accent/40' : 'bg-accent/60'} transform -translate-x-[12vw]`} />
-        
-        <div className={`absolute top-[15vh] left-[12vw] text-[9px] tracking-[0.8em] font-light p-6 uppercase ${isDark ? 'text-accent/60' : 'text-accent/80'}`}>
-          Collection . 026 / Architecture & Design
-        </div>
-      </div>
-
-      {/* ─── Main Content ─── */}
-      <div className="relative z-10 text-center flex flex-col items-center select-none" style={{ perspective: "2000px" }}>
-        <motion.div 
-          initial={{ opacity: 0, letterSpacing: "1.5em", y: -20 }}
-          animate={{ opacity: 0.6, letterSpacing: "0.8em", y: 0 }}
-          transition={{ duration: 2, ease: "expo.out", delay: 1.5 }}
-          className="text-[10px] uppercase font-light text-black dark:text-white mb-12"
-        >
-          {language === 'en' ? 'Pioneering Future Spaces' : 'پیشگام فضاهای آینده'}
-        </motion.div>
-
-        <h1
-          ref={titleRef}
-          className="font-serif leading-[0.9] tracking-[-0.05em] uppercase"
-          style={{
-            fontSize: "clamp(4rem, 15vw, 13rem)",
-            color: isDark ? "#fdfcf9" : "#1a120b",
-          }}
-        >
-          {t("hero_title")}
-        </h1>
-
-        <div className="mt-8 flex items-center justify-center gap-6 overflow-hidden">
-          <motion.div 
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 1.5, ease: "expo.inOut", delay: 2 }}
-            className="w-16 h-[0.5px] bg-accent/40 origin-left" 
-          />
-          <p
-            ref={subtitleRef}
-            className="font-serif italic tracking-widest text-black/60 dark:text-white/60"
-            style={{ fontSize: "clamp(0.8rem, 2vw, 1.2rem)" }}
-          >
-            {t("hero_subtitle")}
-          </p>
-          <motion.div 
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 1.5, ease: "expo.inOut", delay: 2 }}
-            className="w-16 h-[0.5px] bg-accent/40 origin-right" 
-          />
-        </div>
-
-        <div ref={taglineRef} className="mt-20 flex flex-col items-center gap-10 opacity-0">
-          <div className="flex gap-16 md:gap-24 relative">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-px bg-linear-to-r from-transparent via-accent/30 to-transparent" />
-            
-            <div className="flex flex-col items-center group cursor-pointer" data-cursor="hover">
-              <span className="text-[28px] font-serif transition-colors group-hover:text-accent duration-500">12</span>
-              <span className="text-[8px] uppercase tracking-[0.5em] opacity-40 group-hover:opacity-100 transition-all duration-500">Years Exp</span>
-            </div>
-            <div className="flex flex-col items-center group cursor-pointer" data-cursor="hover">
-              <span className="text-[28px] font-serif transition-colors group-hover:text-accent duration-500">450</span>
-              <span className="text-[8px] uppercase tracking-[0.5em] opacity-40 group-hover:opacity-100 transition-all duration-500">Projects</span>
-            </div>
-            <div className="flex flex-col items-center group cursor-pointer" data-cursor="hover">
-              <span className="text-[28px] font-serif transition-colors group-hover:text-accent duration-500">25</span>
-              <span className="text-[8px] uppercase tracking-[0.5em] opacity-40 group-hover:opacity-100 transition-all duration-500">Awards</span>
-            </div>
-          </div>
+      {/* ─── Cinematic Background Slider ─── */}
+      <div className="absolute inset-0 z-0 flex flex-col lg:flex-row h-full">
+        {/* Left Panel: Dynamic Background */}
+        <div className="w-full lg:w-3/5 h-full relative overflow-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentImageIndex}
+              initial={{ scale: 1.3, x: -50, opacity: 0 }}
+              animate={{ 
+                scale: 1, 
+                x: mousePos.x * -30, 
+                y: mousePos.y * -20,
+                opacity: 1 
+              }}
+              exit={{ scale: 0.9, x: 50, opacity: 0, filter: "blur(40px)" }}
+              transition={{ duration: 3.5, ease: [0.19, 1, 0.22, 1] }}
+              className="absolute inset-0"
+            >
+              <Image
+                src={HERO_IMAGES[currentImageIndex]}
+                alt="Architectural Vision"
+                fill
+                priority
+                className="object-cover"
+              />
+              <div className={`absolute inset-0 ${isDark ? 'bg-black/30' : 'bg-white/10'}`} />
+            </motion.div>
+          </AnimatePresence>
           
-          <motion.div 
-            animate={{ y: [0, 5, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="text-[10px] tracking-[0.6em] uppercase text-accent font-medium mt-4"
-          >
-            Design . Psychology . Innovation
-          </motion.div>
+          {/* Animated Noise & Grain for Texture */}
+          <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none mix-blend-overlay" style={{backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }} />
+        </div>
+
+        {/* Right Panel: Clean Space */}
+        <div className={`hidden lg:block lg:w-2/5 h-full ${isDark ? 'bg-neutral-950' : 'bg-[#FDFCF9]'} border-l border-black/5 dark:border-white/5 transition-colors duration-1000`} />
+      </div>
+
+      {/* ─── Logo Centric Intro (Luxury Reveal) ─── */}
+      <div className="absolute top-12 left-12 z-50 overflow-hidden">
+        <motion.div
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          transition={{ duration: 2, ease: "expo.out", delay: 1 }}
+        >
+          <Image 
+            src="/assets/new-branding-logo.png" 
+            alt="Logo" 
+            width={220} 
+            height={44} 
+            className="w-40 md:w-56 dark:invert brightness-110" 
+          />
+        </motion.div>
+      </div>
+
+      {/* ─── Hero Main Content ─── */}
+      <div className="relative z-10 w-full h-full flex flex-col justify-end lg:justify-center px-12 pb-24 lg:pb-0">
+        <div className="max-w-[1600px] mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-end lg:items-center">
+          
+          {/* Main Title - Spanning the split */}
+          <div className="lg:col-span-8 flex flex-col gap-8">
+             <div className="overflow-hidden">
+                <motion.span 
+                  initial={{ y: "100%", opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 1.5, ease: "expo.out", delay: 1.2 }}
+                  className="text-accent text-[9px] md:text-[11px] tracking-[0.6em] uppercase font-light block ml-1"
+                >
+                  {language === 'en' ? 'Pioneering Human Experience' : 'پیشگام تجربه انسانی'}
+                </motion.span>
+             </div>
+
+             <div className="relative">
+                <h1
+                  ref={titleRef}
+                  className="font-serif leading-[0.85] tracking-[-0.05em] uppercase pointer-events-none"
+                  style={{
+                    fontSize: "clamp(5rem, 18vw, 15rem)",
+                    color: isDark ? "#FFF" : "#0A0A0A",
+                    marginLeft: "-0.05em" // Optical adjustment
+                  }}
+                >
+                  {t("hero_title")}
+                </h1>
+                
+                {/* Secondary Masked Title (Luxury Polish) */}
+                <div className="absolute inset-0 opacity-10 pointer-events-none blur-[60px] translate-y-12">
+                   <span className="font-serif uppercase text-[15vw] select-none text-accent">
+                      {t("hero_title")}
+                   </span>
+                </div>
+             </div>
+          </div>
+
+          {/* Side Info Panel (Luxury Metadata) */}
+          <div className="lg:col-span-4 flex flex-col gap-12 lg:pl-12">
+             <motion.div 
+               style={{ y: mousePos.y * -30 }}
+               className="flex flex-col gap-8"
+             >
+                <div className="overflow-hidden">
+                  <p
+                    ref={subtitleRef}
+                    className="text-sm md:text-xl font-light leading-relaxed max-w-sm"
+                    style={{ color: isDark ? "#BBB" : "#444" }}
+                  >
+                    {t("hero_subtitle")}
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-6">
+                   <div className="h-px w-24 bg-accent/40" />
+                   <div className="flex gap-12">
+                      <div className="flex flex-col gap-2">
+                        <span className="text-[20px] font-serif">12y+</span>
+                        <span className="text-[8px] uppercase tracking-[0.4em] opacity-40">Expertise</span>
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <span className="text-[20px] font-serif">450+</span>
+                        <span className="text-[8px] uppercase tracking-[0.4em] opacity-40">Masterpieces</span>
+                      </div>
+                   </div>
+                </div>
+
+                <div
+                  ref={scrollRef}
+                  className="inline-flex items-center gap-6 cursor-pointer group w-fit mt-4"
+                  onClick={() => {
+                    const section = document.getElementById("philosophySection");
+                    section?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  data-cursor="hover"
+                >
+                  <div className="relative w-12 h-12 flex items-center justify-center border border-accent/20 rounded-full transition-all duration-700 group-hover:scale-110 group-hover:border-accent">
+                    <motion.div 
+                      animate={{ y: [0, 4, 0] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="w-px h-3 bg-accent"
+                    />
+                  </div>
+                  <span className="text-[10px] uppercase tracking-[0.5em] group-hover:text-accent transition-colors duration-500">
+                    {t("scroll_explore")}
+                  </span>
+                </div>
+             </motion.div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Bottom Navigation Progress (Subtle luxury) ─── */}
+      <div className="absolute bottom-12 right-12 z-50 flex items-center gap-6">
+        <div className="flex items-center gap-3">
+          <span className="text-[9px] font-mono text-accent">{`0${currentImageIndex + 1}`}</span>
+          <div className="w-12 h-px bg-accent/20">
+             <motion.div 
+               animate={{ width: `${((currentImageIndex + 1) / HERO_IMAGES.length) * 100}%` }}
+               className="h-full bg-accent" 
+             />
+          </div>
+          <span className="text-[9px] font-mono opacity-30">{`0${HERO_IMAGES.length}`}</span>
+        </div>
+        
+        <div className="flex gap-2">
+          {HERO_IMAGES.map((_, i) => (
+            <button 
+              key={i}
+              onClick={() => setCurrentImageIndex(i)}
+              className={`w-1.5 h-1.5 rounded-full transition-all duration-700 ${i === currentImageIndex ? "bg-accent scale-150" : "bg-black/10 dark:bg-white/10"}`}
+            />
+          ))}
         </div>
       </div>
 
