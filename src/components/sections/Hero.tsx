@@ -115,178 +115,189 @@ export function Hero() {
         style={{ background: isDark ? "var(--bg-dark)" : "var(--bg-main)", transformOrigin: "top" }}
       />
 
-      {/* ─── Cinematic Background Slider ─── */}
-      <div className="absolute inset-0 z-0 flex flex-col lg:flex-row h-full">
-        {/* Left Panel: Dynamic Background */}
-        <div className="w-full lg:w-3/5 h-full relative overflow-hidden">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentImageIndex}
-              initial={{ scale: 1.3, x: -50, opacity: 0 }}
-              animate={{ 
-                scale: 1, 
-                x: mousePos.x * -30, 
-                y: mousePos.y * -20,
-                opacity: 1 
-              }}
-              exit={{ scale: 0.9, x: 50, opacity: 0, filter: "blur(40px)" }}
-              transition={{ duration: 3.5, ease: [0.19, 1, 0.22, 1] }}
-              className="absolute inset-0"
-            >
-              <Image
-                src={HERO_IMAGES[currentImageIndex]}
-                alt="Architectural Vision"
-                fill
-                priority
-                className="object-cover"
-              />
-              <div className={`absolute inset-0 ${isDark ? 'bg-black/30' : 'bg-white/10'}`} />
-            </motion.div>
-          </AnimatePresence>
-          
-          {/* Animated Noise & Grain for Texture */}
-          <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none mix-blend-overlay" style={{backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }} />
+      {/* ─── Ultra-Premium Minimalist Background ─── */}
+      <div className={`absolute inset-0 z-0 ${isDark ? 'bg-neutral-950' : 'bg-[#FCFAF7]'} overflow-hidden transition-colors duration-1000`}>
+        {/* Procedural Architectural Grids */}
+        <div className={`absolute inset-0 z-0 pointer-events-none ${isDark ? 'opacity-[0.05]' : 'opacity-[0.03]'}`}>
+           {/* Vertical Grid Lines */}
+           {[...Array(12)].map((_, i) => (
+             <div 
+               key={`v-${i}`} 
+               className="absolute top-0 bottom-0 w-px bg-current" 
+               style={{ left: `${(i + 1) * 8.33}%` }} 
+             />
+           ))}
+           {/* Horizontal Grid Lines */}
+           {[...Array(8)].map((_, i) => (
+             <div 
+               key={`h-${i}`} 
+               className="absolute left-0 right-0 h-px bg-current" 
+               style={{ top: `${(i + 1) * 12.5}%` }} 
+             />
+           ))}
         </div>
 
-        {/* Right Panel: Clean Space */}
-        <div className={`hidden lg:block lg:w-2/5 h-full ${isDark ? 'bg-neutral-950' : 'bg-[#FDFCF9]'} border-l border-black/5 dark:border-white/5 transition-colors duration-1000`} />
+        {/* Dynamic Light Canvas (Subtle Bloom) */}
+        <motion.div 
+          animate={{
+            x: mousePos.x * 40,
+            y: mousePos.y * 40,
+            opacity: [0.1, 0.15, 0.1]
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute inset-0 z-[1] pointer-events-none blur-[140px]"
+          style={{
+            background: `radial-gradient(circle at 50% 50%, ${isDark ? 'rgba(200, 168, 130, 0.3)' : 'rgba(100, 70, 30, 0.2)'} 0%, transparent 70%)`
+          }}
+        />
+
+        {/* Floating Light Leaks */}
+        <motion.div 
+          animate={{
+            rotate: [0, 360],
+            scale: [1, 1.2, 1]
+          }}
+          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-[50%] -left-[50%] w-[200%] h-[200%] z-[1] pointer-events-none opacity-[0.03] dark:opacity-[0.08]"
+          style={{
+             background: "conic-gradient(from 0deg at 50% 50%, transparent, rgba(200, 168, 130, 0.1), transparent 40%)"
+          }}
+        />
+        
+        {/* Luxury Grain Overlay */}
+        <div className="absolute inset-0 z-[2] opacity-[0.02] dark:opacity-[0.04] pointer-events-none mix-blend-overlay" style={{backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }} />
       </div>
 
-      {/* ─── Logo Centric Intro (Luxury Reveal) ─── */}
-      <div className="absolute top-12 left-12 z-50 overflow-hidden">
+      {/* ─── Navigation Branding (Logo Integration) ─── */}
+      <div className="absolute top-12 left-12 z-50 overflow-hidden mix-blend-difference">
         <motion.div
-          initial={{ y: "100%" }}
-          animate={{ y: 0 }}
+          initial={{ y: "100%", opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 2, ease: "expo.out", delay: 1 }}
         >
-          <Link href="/" className="block">
+          <Link href="/" className="block group">
             <Image 
               src="/assets/new-branding-logo.png" 
-              alt="Logo" 
-              width={220} 
-              height={44} 
-              className="w-40 md:w-56 dark:invert brightness-110" 
+              alt="Brand Logo" 
+              width={260} 
+              height={52} 
+              className="w-48 md:w-64 invert grayscale brightness-150 transition-all duration-700 group-hover:scale-105" 
             />
           </Link>
         </motion.div>
       </div>
 
       {/* ─── Hero Main Content ─── */}
-      <div className="relative z-10 w-full h-full flex flex-col justify-end lg:justify-center px-12 pb-24 lg:pb-0">
-        <div className="max-w-[1600px] mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-end lg:items-center">
-          
-          {/* Main Title - Spanning the split */}
-          <div className="lg:col-span-8 flex flex-col gap-8">
-             <div className="overflow-hidden">
-                <motion.span 
-                  initial={{ y: "100%", opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 1.5, ease: "expo.out", delay: 1.2 }}
-                  className="text-accent text-[9px] md:text-[11px] tracking-[0.6em] uppercase font-light block ml-1"
-                >
-                  {language === 'en' ? 'Pioneering Human Experience' : 'پیشگام تجربه انسانی'}
-                </motion.span>
-             </div>
+      <div className="relative z-10 w-full h-full flex flex-col justify-center items-center px-6 lg:px-24">
+        
+        {/* Floating Architectural Annotation */}
+        <motion.div 
+          initial={{ opacity: 0, x: -40 }}
+          animate={{ opacity: 0.2, x: 0 }}
+          transition={{ duration: 2.5, delay: 2 }}
+          className="absolute left-[8.33%] top-[30vh] hidden lg:block"
+        >
+           <div className="flex flex-col gap-4 border-l border-accent/40 pl-6 py-2">
+              <span className="text-[9px] font-mono tracking-[0.4em] uppercase">Ref. System 026</span>
+              <span className="text-[9px] font-mono tracking-[0.4em] uppercase">Lat: 25.2048° N</span>
+              <span className="text-[9px] font-mono tracking-[0.4em] uppercase">Lon: 55.2708° E</span>
+           </div>
+        </motion.div>
 
-             <div className="relative">
-                <h1
-                  ref={titleRef}
-                  className="font-serif leading-[0.85] tracking-[-0.05em] uppercase pointer-events-none"
-                  style={{
-                    fontSize: "clamp(5rem, 18vw, 15rem)",
-                    color: isDark ? "#FFF" : "#0A0A0A",
-                    marginLeft: "-0.05em" // Optical adjustment
-                  }}
-                >
-                  {t("hero_title")}
-                </h1>
-                
-                {/* Secondary Masked Title (Luxury Polish) */}
-                <div className="absolute inset-0 opacity-10 pointer-events-none blur-[60px] translate-y-12">
-                   <span className="font-serif uppercase text-[15vw] select-none text-accent">
-                      {t("hero_title")}
-                   </span>
-                </div>
-             </div>
+        <div className="max-w-[1400px] w-full flex flex-col items-center">
+          
+          {/* Tagline Reveal */}
+          <div className="overflow-hidden mb-12">
+            <motion.span 
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 0.6 }}
+              transition={{ duration: 2, ease: "expo.out", delay: 1.2 }}
+              className="text-[10px] md:text-[12px] tracking-[1em] uppercase font-light text-black dark:text-white"
+            >
+              {language === 'en' ? 'Pioneering Human Experience' : 'پیشگام تجربه انسانی'}
+            </motion.span>
           </div>
 
-          {/* Side Info Panel (Luxury Metadata) */}
-          <div className="lg:col-span-4 flex flex-col gap-12 lg:pl-12">
-             <motion.div 
-               style={{ y: mousePos.y * -30 }}
-               className="flex flex-col gap-8"
+          {/* Main Title - The Masterpiece Typography */}
+          <div className="relative group perspective-1000">
+             <motion.h1
+               initial={{ opacity: 0, y: 100, rotateX: -30 }}
+               animate={{ opacity: 1, y: 0, rotateX: 0 }}
+               transition={{ duration: 2.5, ease: [0.19, 1, 0.22, 1], delay: 1.5 }}
+               className="font-serif leading-[0.85] tracking-[-0.04em] uppercase text-center select-none"
+               style={{
+                 fontSize: "clamp(4.5rem, 16vw, 16rem)",
+                 color: isDark ? "#FDFCF9" : "#1A1A1A",
+                 textRendering: "optimizeLegibility"
+               }}
              >
-                <div className="overflow-hidden">
-                  <p
-                    ref={subtitleRef}
-                    className="text-sm md:text-xl font-light leading-relaxed max-w-sm"
-                    style={{ color: isDark ? "#BBB" : "#444" }}
-                  >
+               {t("hero_title").split(" ").map((word, i) => (
+                 <span key={i} className="block lg:inline-block lg:mx-4">
+                    {word}
+                 </span>
+               ))}
+             </motion.h1>
+
+             {/* Optical Shadow for Depth */}
+             <div className={`absolute inset-0 blur-[80px] opacity-[0.08] pointer-events-none scale-110 translate-y-12 ${isDark ? 'bg-accent' : 'bg-black'}`} />
+          </div>
+
+          {/* Luxury Subtitle & Metadata */}
+          <div className="mt-20 flex flex-col items-center gap-12 w-full max-w-2xl">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 2, delay: 2.5 }}
+                className="flex items-center justify-center gap-8 w-full"
+              >
+                 <div className="h-px flex-1 bg-linear-to-r from-transparent via-accent/30 to-transparent" />
+                 <p className="font-serif italic text-lg md:text-2xl text-black/50 dark:text-white/50 tracking-wide whitespace-nowrap">
                     {t("hero_subtitle")}
-                  </p>
-                </div>
+                 </p>
+                 <div className="h-px flex-1 bg-linear-to-r from-accent/30 to-transparent" />
+              </motion.div>
 
-                <div className="flex flex-col gap-6">
-                   <div className="h-px w-24 bg-accent/40" />
-                   <div className="flex gap-12">
-                      <div className="flex flex-col gap-2">
-                        <span className="text-[20px] font-serif">12y+</span>
-                        <span className="text-[8px] uppercase tracking-[0.4em] opacity-40">Expertise</span>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <span className="text-[20px] font-serif">450+</span>
-                        <span className="text-[8px] uppercase tracking-[0.4em] opacity-40">Masterpieces</span>
-                      </div>
-                   </div>
-                </div>
+              <div className="flex gap-20 md:gap-32 mt-4 relative">
+                 {/* Center Line Decoration */}
+                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-16 w-px bg-accent/20" />
+                 
+                 <div className="flex flex-col items-center gap-2">
+                    <span className="text-[32px] md:text-[44px] font-serif tracking-tighter">12y+</span>
+                    <span className="text-[8px] uppercase tracking-[0.5em] opacity-40">Years Exp</span>
+                 </div>
+                 <div className="flex flex-col items-center gap-2">
+                    <span className="text-[32px] md:text-[44px] font-serif tracking-tighter">450+</span>
+                    <span className="text-[8px] uppercase tracking-[0.5em] opacity-40">Masterpieces</span>
+                 </div>
+              </div>
 
-                <div
-                  ref={scrollRef}
-                  className="inline-flex items-center gap-6 cursor-pointer group w-fit mt-4"
-                  onClick={() => {
-                    const section = document.getElementById("philosophySection");
-                    section?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  data-cursor="hover"
-                >
-                  <div className="relative w-12 h-12 flex items-center justify-center border border-accent/20 rounded-full transition-all duration-700 group-hover:scale-110 group-hover:border-accent">
+              {/* Ultra-Minimal Scroll Indicator */}
+              <motion.div
+                onClick={() => {
+                  const section = document.getElementById("philosophySection");
+                  section?.scrollIntoView({ behavior: "smooth" });
+                }}
+                animate={{ y: [0, 10, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="cursor-pointer group flex flex-col items-center gap-6 mt-12"
+              >
+                 <div className="w-[1px] h-20 bg-linear-to-b from-accent to-transparent relative overflow-hidden">
                     <motion.div 
-                      animate={{ y: [0, 4, 0] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      className="w-px h-3 bg-accent"
+                      animate={{ top: ["-100%", "100%"] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                      className="absolute left-0 w-full h-1/2 bg-white dark:bg-black opacity-40" 
                     />
-                  </div>
-                  <span className="text-[10px] uppercase tracking-[0.5em] group-hover:text-accent transition-colors duration-500">
-                    {t("scroll_explore")}
-                  </span>
-                </div>
-             </motion.div>
+                 </div>
+                 <span className="text-[9px] tracking-[0.8em] uppercase font-bold text-accent">Explore</span>
+              </motion.div>
           </div>
         </div>
       </div>
 
-      {/* ─── Bottom Navigation Progress (Subtle luxury) ─── */}
-      <div className="absolute bottom-12 right-12 z-50 flex items-center gap-6">
-        <div className="flex items-center gap-3">
-          <span className="text-[9px] font-mono text-accent">{`0${currentImageIndex + 1}`}</span>
-          <div className="w-12 h-px bg-accent/20">
-             <motion.div 
-               animate={{ width: `${((currentImageIndex + 1) / HERO_IMAGES.length) * 100}%` }}
-               className="h-full bg-accent" 
-             />
-          </div>
-          <span className="text-[9px] font-mono opacity-30">{`0${HERO_IMAGES.length}`}</span>
-        </div>
-        
-        <div className="flex gap-2">
-          {HERO_IMAGES.map((_, i) => (
-            <button 
-              key={i}
-              onClick={() => setCurrentImageIndex(i)}
-              className={`w-1.5 h-1.5 rounded-full transition-all duration-700 ${i === currentImageIndex ? "bg-accent scale-150" : "bg-black/10 dark:bg-white/10"}`}
-            />
-          ))}
-        </div>
+      {/* ─── Bottom Technical Metadata ─── */}
+      <div className="absolute bottom-12 left-12 hidden lg:flex flex-col gap-2 opacity-30 mix-blend-difference">
+         <span className="text-[7px] font-mono tracking-widest uppercase">Building Architecture / Psychology / Design</span>
+         <span className="text-[7px] font-mono tracking-widest uppercase">© Kasra Padyab Vault MMXXVI</span>
       </div>
 
       {/* ─── Scroll Indicator ─── */}
