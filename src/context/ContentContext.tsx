@@ -28,9 +28,31 @@ export interface Category {
   items: SectionItem[];
 }
 
+export interface PhilosophyContent {
+  titleEn: string;
+  titleFa: string;
+  subtitleEn: string;
+  subtitleFa: string;
+}
+
+export interface ExpertiseItem {
+  id: string;
+  titleEn: string;
+  titleFa: string;
+  img: string;
+}
+
+export interface ExpertiseContent {
+  titleEn: string;
+  titleFa: string;
+  items: ExpertiseItem[];
+}
+
 interface ContentContextType {
   team: TeamMember[];
   categories: Category[];
+  philosophy: PhilosophyContent;
+  expertise: ExpertiseContent;
   updateTeamMemberPhoto: (name: string, newImg: string) => void;
   updateTeamMemberDetails: (name: string, details: Partial<TeamMember>) => void;
   addTeamMember: (member: TeamMember) => void;
@@ -38,6 +60,9 @@ interface ContentContextType {
   updateSectionItemImage: (categoryId: string, itemIndex: number, newImg: string) => void;
   addSectionItem: (categoryId: string, item: SectionItem) => void;
   deleteSectionItem: (categoryId: string, itemIndex: number) => void;
+  updatePhilosophy: (updates: Partial<PhilosophyContent>) => void;
+  updateExpertise: (updates: Partial<ExpertiseContent>) => void;
+  updateExpertiseItem: (index: number, updates: Partial<ExpertiseItem>) => void;
   resetToDefaults: () => void;
   lastSaved: Date | null;
 }
@@ -46,7 +71,7 @@ const ContentContext = createContext<ContentContextType | null>(null);
 
 const STORAGE_KEY = "kasra_site_content";
 
-function loadFromStorage(): { team: TeamMember[]; categories: Category[] } | null {
+function loadFromStorage(): { team: TeamMember[]; categories: Category[]; philosophy?: PhilosophyContent; expertise?: ExpertiseContent } | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -57,7 +82,7 @@ function loadFromStorage(): { team: TeamMember[]; categories: Category[] } | nul
   }
 }
 
-function saveToStorage(data: { team: TeamMember[]; categories: Category[] }) {
+function saveToStorage(data: { team: TeamMember[]; categories: Category[]; philosophy: PhilosophyContent; expertise: ExpertiseContent }) {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -76,9 +101,29 @@ const defaultTeam: TeamMember[] = siteData.team.map(m => ({
 
 const defaultCategories: Category[] = siteData.categories as Category[];
 
+const defaultPhilosophy: PhilosophyContent = {
+  titleEn: "Architecture is the silent language of space, light, and form.",
+  titleFa: "معماری زبان خاموش فضا، نور و فرم است.",
+  subtitleEn: "We craft environments that resonate with the human spirit, blending structural precision with emotional depth.",
+  subtitleFa: "ما محیط‌هایی می‌سازیم که با روح انسان طنین‌انداز می‌شوند و دقت ساختاری را با عمق احساسی در هم می‌آمیزند."
+};
+
+const defaultExpertise: ExpertiseContent = {
+  titleEn: "Disciplines",
+  titleFa: "رشته ها",
+  items: [
+    { id: "01", titleEn: "Masterplanning", titleFa: "طرح جامع", img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1200" },
+    { id: "02", titleEn: "Interior Architecture", titleFa: "معماری داخلی", img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1200" },
+    { id: "03", titleEn: "Conceptual Design", titleFa: "طراحی مفهومی", img: "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?auto=format&fit=crop&q=80&w=1200" },
+    { id: "04", titleEn: "Landscape Integration", titleFa: "تلفیق منظر", img: "https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?auto=format&fit=crop&q=80&w=1200" }
+  ]
+};
+
 export function ContentProvider({ children }: { children: ReactNode }) {
   const [team, setTeam] = useState<TeamMember[]>(defaultTeam);
   const [categories, setCategories] = useState<Category[]>(defaultCategories);
+  const [philosophy, setPhilosophy] = useState<PhilosophyContent>(defaultPhilosophy);
+  const [expertise, setExpertise] = useState<ExpertiseContent>(defaultExpertise);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
@@ -89,6 +134,8 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       if (stored) {
         setTeam(stored.team);
         setCategories(stored.categories);
+        if (stored.philosophy) setPhilosophy(stored.philosophy);
+        if (stored.expertise) setExpertise(stored.expertise);
       }
       setHydrated(true);
     };
@@ -99,13 +146,15 @@ export function ContentProvider({ children }: { children: ReactNode }) {
       try {
         const { data, error } = await supabase
           .from("site_settings")
-          .select("team, categories")
+          .select("team, categories, philosophy, expertise")
           .eq("id", 1)
           .single();
           
         if (data && !error) {
           if (data.team) setTeam(data.team);
           if (data.categories) setCategories(data.categories);
+          if (data.philosophy) setPhilosophy(data.philosophy);
+          if (data.expertise) setExpertise(data.expertise);
         }
       } catch (err) {
         console.error("Supabase fetch error:", err);
@@ -120,6 +169,8 @@ export function ContentProvider({ children }: { children: ReactNode }) {
           const parsed = JSON.parse(e.newValue);
           if (parsed.team) setTeam(parsed.team);
           if (parsed.categories) setCategories(parsed.categories);
+          if (parsed.philosophy) setPhilosophy(parsed.philosophy);
+          if (parsed.expertise) setExpertise(parsed.expertise);
         } catch { }
       }
     };
@@ -130,7 +181,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
   // Auto-save whenever team or categories change (after hydration)
   useEffect(() => {
     if (!hydrated) return;
-    const data = { team, categories };
+    const data = { team, categories, philosophy, expertise };
     saveToStorage(data);
     
     // Sync to Supabase
@@ -140,6 +191,8 @@ export function ContentProvider({ children }: { children: ReactNode }) {
           id: 1,
           team: data.team,
           categories: data.categories,
+          philosophy: data.philosophy,
+          expertise: data.expertise,
           updated_at: new Date().toISOString()
         });
       } catch (err) {
@@ -150,7 +203,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
     
     const timer = setTimeout(() => setLastSaved(new Date()), 100);
     return () => clearTimeout(timer);
-  }, [team, categories, hydrated]);
+  }, [team, categories, philosophy, expertise, hydrated]);
 
   const updateTeamMemberPhoto = useCallback((name: string, newImg: string) => {
     setTeam(prev => prev.map(m => m.name === name ? { ...m, img: newImg } : m));
@@ -190,17 +243,35 @@ export function ContentProvider({ children }: { children: ReactNode }) {
     ));
   }, []);
 
+  const updatePhilosophy = useCallback((updates: Partial<PhilosophyContent>) => {
+    setPhilosophy(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  const updateExpertise = useCallback((updates: Partial<ExpertiseContent>) => {
+    setExpertise(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  const updateExpertiseItem = useCallback((index: number, updates: Partial<ExpertiseItem>) => {
+    setExpertise(prev => ({
+      ...prev,
+      items: prev.items.map((item, i) => i === index ? { ...item, ...updates } : item)
+    }));
+  }, []);
+
   const resetToDefaults = useCallback(() => {
     setTeam(defaultTeam);
     setCategories(defaultCategories);
+    setPhilosophy(defaultPhilosophy);
+    setExpertise(defaultExpertise);
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
   return (
     <ContentContext.Provider value={{
-      team, categories,
+      team, categories, philosophy, expertise,
       updateTeamMemberPhoto, updateTeamMemberDetails, addTeamMember, deleteTeamMember,
       updateSectionItemImage, addSectionItem, deleteSectionItem,
+      updatePhilosophy, updateExpertise, updateExpertiseItem,
       resetToDefaults, lastSaved
     }}>
       {children}

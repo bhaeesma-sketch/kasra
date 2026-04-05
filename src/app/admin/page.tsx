@@ -15,7 +15,7 @@ const designerSchema = z.object({
 });
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-type Tab = "sections" | "designers" | "config";
+type Tab = "homepage" | "sections" | "designers" | "config";
 type View = "login" | "dashboard" | "designer-detail";
 
 interface UploadedFile {
@@ -239,7 +239,11 @@ export default function AdminDashboard() {
   // Track which section item is being edited: { categoryId, itemIndex }
   const [editSectionEntry, setEditSectionEntry] = useState<{ categoryId: string; itemIndex: number; title: string; currentImg: string } | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const { team, updateTeamMemberPhoto, updateTeamMemberDetails, addTeamMember, deleteTeamMember, updateSectionItemImage, categories } = useContent();
+  const { 
+    team, updateTeamMemberPhoto, updateTeamMemberDetails, addTeamMember, deleteTeamMember, 
+    updateSectionItemImage, categories, 
+    philosophy, updatePhilosophy, expertise, updateExpertise, updateExpertiseItem 
+  } = useContent();
 
   const handleAddDesigner = () => {
     const name = prompt("Enter Designer Name:");
@@ -524,7 +528,12 @@ export default function AdminDashboard() {
         <div style={{ display: "flex", gap: 40 }}>
           {/* Sidebar */}
           <div style={{ width: 190, flexShrink: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-            {([ { id: "sections", icon: <LayoutTemplate size={15} />, label: "Sections" }, { id: "designers", icon: <Users size={15} />, label: "Designers" }, { id: "config", icon: <Settings size={15} />, label: "Configuration" } ] as const).map(item => (
+            {([ 
+              { id: "homepage", icon: <LayoutTemplate size={15} />, label: "Homepage" },
+              { id: "sections", icon: <LayoutTemplate size={15} />, label: "Projects" }, 
+              { id: "designers", icon: <Users size={15} />, label: "Designers" }, 
+              { id: "config", icon: <Settings size={15} />, label: "Configuration" } 
+            ] as const).map(item => (
               <button key={item.id} onClick={() => setActiveTab(item.id as Tab)}
                 style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", background: activeTab === item.id ? "rgba(212,175,55,0.1)" : "transparent", border: `1px solid ${activeTab === item.id ? "rgba(212,175,55,0.25)" : "transparent"}`, borderRadius: 10, color: activeTab === item.id ? "#d4af37" : "rgba(255,255,255,0.4)", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", cursor: "pointer", textAlign: "left", transition: "all 0.15s" }}>
                 {item.icon} {item.label}
@@ -534,6 +543,76 @@ export default function AdminDashboard() {
 
           {/* Main content */}
           <div style={{ flex: 1, minWidth: 0 }}>
+
+            {/* ── Homepage Tab ── */}
+            {activeTab === "homepage" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
+                {/* Philosophy Section */}
+                <section>
+                  <h2 style={{ fontFamily: "serif", fontSize: 22, letterSpacing: 4, textTransform: "uppercase", marginBottom: 24, color: "#d4af37" }}>Philosophy Section</h2>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 24 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                      <div>
+                        <label style={{ display: "block", fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>Title (English)</label>
+                        <textarea value={philosophy.titleEn} onChange={e => updatePhilosophy({ titleEn: e.target.value })} style={{ width: "100%", background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: 12, color: "#fff", fontSize: 14, minHeight: 80, outline: "none" }} />
+                      </div>
+                      <div>
+                        <label style={{ display: "block", fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>Subtitle (English)</label>
+                        <textarea value={philosophy.subtitleEn} onChange={e => updatePhilosophy({ subtitleEn: e.target.value })} style={{ width: "100%", background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: 12, color: "#fff", fontSize: 13, minHeight: 100, outline: "none" }} />
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                      <div>
+                        <label style={{ display: "block", fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 8, textAlign: "right" }}>عنوان اصلی (فارسی)</label>
+                        <textarea dir="rtl" value={philosophy.titleFa} onChange={e => updatePhilosophy({ titleFa: e.target.value })} style={{ width: "100%", background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: 12, color: "#fff", fontSize: 14, minHeight: 80, outline: "none" }} />
+                      </div>
+                      <div>
+                        <label style={{ display: "block", fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 8, textAlign: "right" }}>متن زیرین (فارسی)</label>
+                        <textarea dir="rtl" value={philosophy.subtitleFa} onChange={e => updatePhilosophy({ subtitleFa: e.target.value })} style={{ width: "100%", background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: 12, color: "#fff", fontSize: 13, minHeight: 100, outline: "none" }} />
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Expertise Section */}
+                <section>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+                    <h2 style={{ fontFamily: "serif", fontSize: 22, letterSpacing: 4, textTransform: "uppercase", color: "#d4af37" }}>Expertise Disciplines</h2>
+                  </div>
+                  
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 24 }}>
+                    <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 20 }}>
+                      <label style={{ display: "block", fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>Section Header (EN)</label>
+                      <input value={expertise.titleEn} onChange={e => updateExpertise({ titleEn: e.target.value })} style={{ width: "100%", background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: 12, color: "#fff", fontSize: 14, outline: "none" }} />
+                    </div>
+                    <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 20 }}>
+                      <label style={{ display: "block", fontSize: 10, letterSpacing: 3, textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: 8, textAlign: "right" }}>تیتر (فارسی)</label>
+                      <input dir="rtl" value={expertise.titleFa} onChange={e => updateExpertise({ titleFa: e.target.value })} style={{ width: "100%", background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: 12, color: "#fff", fontSize: 14, outline: "none" }} />
+                    </div>
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 20 }}>
+                    {expertise.items.map((item, idx) => (
+                      <div key={idx} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 24, display: "flex", gap: 20 }}>
+                        <div style={{ width: 120, flexShrink: 0 }}>
+                           <MediaUploader label={`Image ${item.id}`} currentImage={item.img} onUpload={f => updateExpertiseItem(idx, { img: f.url })} />
+                        </div>
+                        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+                          <div>
+                            <label style={{ display: "block", fontSize: 9, letterSpacing: 2, textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: 4 }}>English Title</label>
+                            <input value={item.titleEn} onChange={e => updateExpertiseItem(idx, { titleEn: e.target.value })} style={{ width: "100%", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 8, padding: 10, color: "#fff", fontSize: 13, outline: "none" }} />
+                          </div>
+                          <div>
+                            <label style={{ display: "block", fontSize: 9, letterSpacing: 2, textTransform: "uppercase", color: "rgba(255,255,255,0.3)", marginBottom: 4, textAlign: "right" }}>عنوان فارسی</label>
+                            <input dir="rtl" value={item.titleFa} onChange={e => updateExpertiseItem(idx, { titleFa: e.target.value })} style={{ width: "100%", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 8, padding: 10, color: "#fff", fontSize: 13, outline: "none" }} />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </div>
+            )}
 
             {/* ── Sections Tab ── */}
             {activeTab === "sections" && (
