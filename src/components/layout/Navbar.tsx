@@ -47,8 +47,8 @@ export function Navbar() {
   return (
     <nav
       className={cn(
-        "fixed top-0 right-0 w-full lg:w-fit z-100 transition-all duration-700",
-        scrolled ? "bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-black/5 dark:border-white/5 py-4" : "bg-transparent py-10"
+        "fixed top-0 right-0 w-full lg:w-fit z-100 transition-all duration-1000",
+        scrolled ? "bg-white/70 dark:bg-black/70 backdrop-blur-2xl border-b border-black/5 dark:border-white/10 py-5 shadow-[0_10px_30px_rgba(0,0,0,0.1)]" : "bg-transparent py-10"
       )}
     >
       <div className="container mx-auto px-6 md:px-12 flex items-center justify-end">
@@ -60,10 +60,10 @@ export function Navbar() {
               <a 
                 key={link.key} 
                 href={link.href} 
-                className="hover:text-accent transition-colors duration-500 relative group"
+                className="hover:text-amber-500 dark:hover:text-amber-400 transition-colors duration-700 relative group"
               >
                 {link.key}
-                <span className="absolute -bottom-1 left-0 w-0 h-[1.5px] bg-accent transition-all duration-500 group-hover:w-full" />
+                <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-0 h-[1.5px] bg-linear-to-r from-transparent via-amber-500 to-transparent transition-all duration-700 group-hover:w-full opacity-0 group-hover:opacity-100" />
               </a>
             ))}
           </div>
@@ -100,9 +100,12 @@ export function Navbar() {
 
             <Link 
               href="#contact"
-              className="bg-black dark:bg-accent text-white dark:text-black px-6 py-2.5 text-[8px] uppercase tracking-[0.3em] font-bold hover:bg-accent dark:hover:bg-white transition-all duration-500"
+              className="group relative overflow-hidden bg-black dark:bg-white text-white dark:text-black px-8 py-3 text-[8.5px] uppercase tracking-[0.4em] font-bold transition-all duration-700"
             >
-               {language === 'en' ? 'Get in Touch' : 'ارتباط با ما'}
+               <div className="absolute inset-0 w-full h-full bg-linear-to-r from-amber-600 via-amber-400 to-amber-600 -translate-x-full group-hover:translate-x-0 transition-transform duration-700 ease-out z-0" />
+               <span className="relative z-10 group-hover:text-black transition-colors duration-700">
+                 {language === 'en' ? 'Get in Touch' : 'ارتباط با ما'}
+               </span>
             </Link>
           </div>
         </div>
