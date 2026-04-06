@@ -8,31 +8,20 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/utils/cn";
 
-const HERO_IMAGES = [
-  "/assets/project-1.jpg",
-  "/assets/project-2.jpg",
-  "/assets/project-3.jpg",
-  "/assets/project-4.jpg",
-];
+
 
 export function Hero() {
   const { t, language } = useLanguage();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     setMounted(true);
     const timer = setTimeout(() => setLoading(false), 2400);
 
-    const slideTimer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_IMAGES.length);
-    }, 6000);
-
     return () => {
       clearTimeout(timer);
-      clearInterval(slideTimer);
     };
   }, []);
 
@@ -87,38 +76,13 @@ export function Hero() {
         id="home"
         className="relative w-full h-screen flex flex-col lg:flex-row overflow-hidden bg-[#050505]"
       >
-        {/* ─── Architectural Cinematic Slider ─── */}
+        {/* ─── Architectural Pure Luxury Void Background ─── */}
         <div className="absolute inset-0 z-0">
-           <AnimatePresence mode="popLayout">
-             <motion.div
-               key={currentSlide}
-               initial={{ opacity: 0, scale: 1.05 }}
-               animate={{ opacity: 1, scale: 1 }}
-               exit={{ opacity: 0, transition: { duration: 1.5, ease: "easeInOut" } }}
-               transition={{ duration: 2, ease: "easeOut" }}
-               className="absolute inset-0"
-             >
-               <Image
-                 src={HERO_IMAGES[currentSlide]}
-                 alt={`Architectural Masterpiece ${currentSlide + 1}`}
-                 fill
-                 priority
-                 className="object-cover"
-                 quality={100}
-               />
-               
-               {/* Luxurious Vignette & Fade Gradients */}
-               <div className={cn(
-                 "absolute inset-0 transition-opacity duration-1000",
-                 isDark ? "bg-black/50" : "bg-black/30"
-               )} />
-               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/60 mix-blend-multiply" />
-               <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent" />
-             </motion.div>
-           </AnimatePresence>
-
-           {/* Fine Texture Grain Overlay for Editorial Feel */}
-           <div className="absolute inset-0 z-[2] opacity-[0.04] pointer-events-none mix-blend-overlay" style={{backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }} />
+          <div className="absolute inset-0 bg-[#050505]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-900/10 via-[#050505] to-[#050505]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_var(--tw-gradient-stops))] from-neutral-900/50 via-transparent to-transparent" />
+          {/* Fine Texture Grain Overlay for Editorial Feel */}
+          <div className="absolute inset-0 z-[2] opacity-[0.05] pointer-events-none mix-blend-screen" style={{backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }} />
         </div>
 
         {/* ─── Premium Logo (Luxury Entrance) ─── */}
@@ -252,27 +216,7 @@ export function Hero() {
           </div>
         </motion.div>
 
-        {/* ─── Minimal Slider Controls ─── */}
-        <div className="absolute top-1/2 right-6 lg:right-14 -translate-y-1/2 z-50 flex flex-col gap-4">
-          {HERO_IMAGES.map((_, i) => (
-            <button 
-              key={i}
-              onClick={() => setCurrentSlide(i)}
-              className="flex items-center gap-4 group"
-            >
-              <span className={cn(
-                "text-[8px] font-mono tracking-[0.2em] transition-all duration-300",
-                i === currentSlide ? "opacity-100 text-accent font-bold" : "opacity-0 -translate-x-4 group-hover:opacity-50 group-hover:translate-x-0 text-white"
-              )}>
-                 0{i + 1}
-              </span>
-              <div className={cn(
-                "h-[1px] transition-all duration-500",
-                i === currentSlide ? "w-8 bg-accent" : "w-3 bg-white/30 group-hover:bg-white/60"
-              )} />
-            </button>
-          ))}
-        </div>
+
 
       </section>
     </>
